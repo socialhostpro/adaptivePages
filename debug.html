@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pages Debug Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .log { background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 4px; }
+        .error { background: #ffe6e6; color: #cc0000; }
+        .success { background: #e6ffe6; color: #006600; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>AdaptivePages Debug Tool</h1>
+    <div id="logs"></div>
+    
+    <button onclick="testAuth()">Test Auth</button>
+    <button onclick="testPages()">Test Pages</button>
+    <button onclick="createTestPage()">Create Test Page</button>
+    <button onclick="clearLogs()">Clear Logs</button>
+
+    <script type="module">
+        import { supabase } from './services/supabase.js';
+        
+        window.supabase = supabase;
+        
+        function log(message, type = 'info') {
+            const logsDiv = document.getElementById('logs');
+            const logDiv = document.createElement('div');
+            logDiv.className = `log ${type}`;
+            logDiv.textContent = `${new Date().toLocaleTimeString()}: ${message}`;
+            logsDiv.appendChild(logDiv);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        window.log = log;
+        
+        window.testAuth = async function() {
+            log('🔐 Testing authentication...');
+            try {
+                const { data: { session }, error } = await supabase.auth.getSession();
+                if (error) {
+                    log(`❌ Auth error: ${error.message}`, 'error');
+                    return;
+                }
+                
+                if (!session) {
+                    log('❌ No session found - trying to login with test account', 'error');
+                    const { data, error: loginError } = await supabase.auth.signInWithPassword({
+                        email: 'default@example.com',
+                        password: 'password123'
+                    });
+                    
+                    if (loginError) {
+                        log(`❌ Login failed: ${loginError.message}`, 'error');
+                    } else {
+                        log('✅ Login successful!', 'success');
+                        log(`User ID: ${data.user.id}`, 'success');
+                    }
+                } else {
+                    log('✅ Session found!', 'success');
+                    log(`User ID: ${session.user.id}`, 'success');
+                    log(`Email: ${session.user.email}`, 'success');
+                }
+            } catch (error) {
+                log(`❌ Auth test failed: ${error.message}`, 'error');
+            }
+        };
+        
+        window.testPages = async function() {
+            log('📄 Testing pages loading...');
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    log('❌ No session - please test auth first', 'error');
+                    return;
+                }
+                
+                log(`🔍 Fetching pages for user: ${session.user.id}`);
+                
+                const { data: pages, error } = await supabase
+                    .from('pages')
+                    .select('*')
+                    .eq('user_id', session.user.id);
+                
+                if (error) {
+                    log(`❌ Pages query error: ${error.message}`, 'error');
+                    log(`Error details: ${JSON.stringify(error)}`, 'error');
+                } else {
+                    log(`✅ Pages query successful!`, 'success');
+                    log(`Found ${pages.length} pages`, 'success');
+                    pages.forEach((page, i) => {
+                        log(`  ${i + 1}. ${page.name} (${page.id})`, 'success');
+                    });
+                }
+            } catch (error) {
+                log(`❌ Pages test failed: ${error.message}`, 'error');
+            }
+        };
+        
+        window.createTestPage = async function() {
+            log('➕ Creating test page...');
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                if (!session) {
+                    log('❌ No session - please test auth first', 'error');
+                    return;
+                }
+                
+                const testPage = {
+                    user_id: session.user.id,
+                    name: `Test Page ${Date.now()}`,
+                    data: { sections: [] },
+                    images: {},
+                    is_published: false,
+                    updated_at: new Date().toISOString()
+                };
+                
+                const { data, error } = await supabase
+                    .from('pages')
+                    .insert([testPage])
+                    .select()
+                    .single();
+                
+                if (error) {
+                    log(`❌ Create page error: ${error.message}`, 'error');
+                    log(`Error details: ${JSON.stringify(error)}`, 'error');
+                } else {
+                    log(`✅ Test page created successfully!`, 'success');
+                    log(`Page ID: ${data.id}`, 'success');
+                    log(`Page Name: ${data.name}`, 'success');
+                }
+            } catch (error) {
+                log(`❌ Create page test failed: ${error.message}`, 'error');
+            }
+        };
+        
+        window.clearLogs = function() {
+            document.getElementById('logs').innerHTML = '';
+        };
+        
+        // Auto-test on load
+        log('🚀 AdaptivePages Debug Tool loaded');
+        log('Click "Test Auth" first, then "Test Pages"');
+    </script>
+</body>
+</html>

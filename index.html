@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/png" href="https://rxkywcylrtoirshfqqpd.supabase.co/storage/v1/object/public/public//Teal%20and%20Lime%20Green%20Logo%20for%20ADAPTIVEPAGES%20(350%20x%20200%20px)%20(1).png" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>AdaptivePages</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <!-- Placeholder for Google Font -->
+    <link id="google-font-link" href="" rel="stylesheet">
+    <style>
+      html {
+        scroll-behavior: smooth;
+      }
+      /* Placeholder for Google Font styles */
+      #google-font-styles {}
+
+      .section-animate {
+        opacity: 0;
+        transform: translateY(30px);
+        transition: opacity 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94), transform 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+        transition-delay: 0.1s;
+      }
+      .section-animate.is-visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .hero-slide-image {
+        animation: kenburns-effect 15s ease-out infinite forwards;
+      }
+      @keyframes kenburns-effect {
+        0% { transform: scale(1) translate(0, 0); opacity: 1; }
+        50% { transform: scale(1.1) translate(-2%, 2%); }
+        100% { transform: scale(1) translate(0, 0); opacity: 1;}
+      }
+      .hero-slide-text {
+        position: absolute;
+        inset: 0;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transform: translateX(-30px);
+        transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+      }
+      .hero-slide-text.active {
+          opacity: 1;
+          transform: translateX(0);
+          transition-delay: 0.2s; /* Delay the entrance slightly */
+      }
+      /* For transparent navbar effect */
+      .nav-transparent {
+        background-color: transparent !important;
+        border-bottom-color: transparent !important;
+        transition: background-color 0.3s ease-in-out, border-color 0.3s ease-in-out;
+      }
+      .nav-scrolled {
+        background-color: rgba(255, 255, 255, 0.8) !important;
+        border-bottom-color: rgba(229, 231, 235, 0.8) !important; /* Corresponds to gray-200/80 */
+      }
+      html.dark .nav-scrolled {
+        background-color: rgba(15, 23, 42, 0.8) !important; /* Corresponds to slate-900/80 */
+        border-bottom-color: rgba(51, 65, 85, 0.8) !important; /* Corresponds to slate-700/80 */
+      }
+    </style>
+    <script>
+      tailwind.config = {
+        darkMode: 'class',
+        theme: {
+          extend: {
+            colors: {
+              // This is useful for dynamic colors from the API
+            }
+          }
+        },
+        safelist: [
+          // This is a safelist for all possible color combinations.
+          // In a real app, you might generate this dynamically or use a plugin.
+          ...[
+            'blue', 'green', 'indigo', 'purple', 'pink', 'red', 'orange', 'yellow',
+            'gray', 'slate', 'zinc', 'neutral', 'stone'
+          ].flatMap(color => [
+            ...[50, 100, 200, 300, 400, 500, 600, 700, 800, 900].flatMap(level => [
+              `bg-${color}-${level}`,
+              `text-${color}-${level}`,
+              `border-${color}-${level}`,
+              `hover:bg-${color}-${level > 100 ? level-100 : 50 }`,
+              `dark:bg-${color}-${level}`,
+              `dark:text-${color}-${level}`,
+              `dark:border-${color}-${level}`,
+              `dark:hover:bg-${color}-${level > 100 ? level-100 : 50 }`,
+            ])
+          ])
+        ]
+      }
+    </script>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.1/",
+    "react": "https://esm.sh/react@^19.1.1",
+    "@google/genai": "https://esm.sh/@google/genai@^1.13.0",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+    "lucide-react": "https://esm.sh/lucide-react@^0.537.0",
+    "file-saver": "https://esm.sh/file-saver@^2.0.5",
+    "jszip": "https://esm.sh/jszip@^3.10.1",
+    "@supabase/supabase-js": "https://esm.sh/@supabase/supabase-js@^2.54.0",
+    "jspdf": "https://esm.sh/jspdf@^2.5.1",
+    "html2canvas": "https://esm.sh/html2canvas@^1.4.1",
+    "chart.js": "https://esm.sh/chart.js@^4.4.3"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="./src/index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

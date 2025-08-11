@@ -1,0 +1,8 @@
+{
+  "name": "81025v2 AdaptivePages",
+  "description": "An AI-powered application that generates stunning, fully-coded landing pages from a simple text prompt. Customize sections, color palettes, and tone, and watch as Gemini crafts your unique webpage with text, images, and video components.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "prompt": ""
+}
