@@ -1,5 +1,3 @@
-
-
 import { supabase } from './supabase';
 import type { ManagedPage, LandingPageData, CartSettings, BookingSettings, ImageStore, StripeSettings, GenerationConfig } from '../types';
 import type { Json, Tables, TablesInsert, TablesUpdate } from '../database.types';
@@ -13,7 +11,10 @@ const pageRowToManagedPage = (page: PageRow, isPublic: boolean = false, groupMap
     const sourceImages = isPublic ? page.published_images : page.images;
 
     const landingPageData = sourceData ? { ...(sourceData as unknown as LandingPageData) } : null;
-    
+
+    // Log the structure of page.data for debugging
+    console.log('[pageRowToManagedPage] page.data:', page.data);
+
     // Always augment with data from separate columns for consistency
     if (landingPageData) {
         landingPageData.cartSettings = (page.cart_settings as unknown as CartSettings) ?? landingPageData.cartSettings;

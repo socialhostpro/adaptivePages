@@ -1,27 +1,28 @@
 
 import React, { useState, useEffect } from 'react';
-import type { LandingPageData, ImageStore, MediaFile, ManagedProduct, CourseChapter, CrmForm, HeroSlide } from '../types';
-import HeroSection from './sections/HeroSection';
-import FeaturesSection from './sections/FeaturesSection';
-import TestimonialsSection from './sections/TestimonialsSection';
-import PricingSection from './sections/PricingSection';
-import FAQSection from './sections/FAQSection';
-import CTASection from './sections/CTASection';
-import VideoSection from './sections/VideoSection';
-import BookingSection from './sections/BookingSection';
-import ContactSection from './sections/ContactSection';
-import { regenerateSectionContent } from '../services/geminiService';
+import type { LandingPageData, ImageStore, MediaFile, ManagedProduct, CourseChapter, CrmForm, HeroSlide } from './src/types';
+import HeroSection from './components/sections/HeroSection';
+import FeaturesSection from './components/sections/FeaturesSection';
+import TestimonialsSection from './components/sections/TestimonialsSection';
+import PricingSection from './components/sections/PricingSection';
+import FAQSection from './components/sections/FAQSection';
+import CTASection from './components/sections/CTASection';
+import VideoSection from './components/sections/VideoSection';
+import BookingSection from './components/sections/BookingSection';
+import ContactSection from './components/sections/ContactSection';
+import { regenerateSectionContent } from './services/geminiService';
 import SectionEditForm from './SectionEditForm';
 import Navbar from './Navbar';
-import XIcon from './icons/XIcon';
-import WhyChooseUsSection from './sections/WhyChooseUsSection';
-import GallerySection from './sections/GallerySection';
-import ProductsSection from './sections/ProductsSection';
-import FooterSection from './sections/FooterSection';
-import CourseSection from './sections/CourseSection';
-import EmbedSection from './sections/EmbedSection';
-import LoaderIcon from './icons/LoaderIcon';
-import CustomFormSection from './sections/CustomFormSection';
+import XIcon from './components/icons/XIcon';
+import WhyChooseUsSection from './components/sections/WhyChooseUsSection';
+import GallerySection from './components/sections/GallerySection';
+import ProductsSection from './components/sections/ProductsSection';
+import FooterSection from './components/sections/FooterSection';
+import CourseSection from './components/sections/CourseSection';
+import EmbedSection from './components/sections/EmbedSection';
+import LoaderIcon from './components/icons/LoaderIcon';
+import CustomFormSection from './components/sections/CustomFormSection';
+import { LessonViewerModal } from './components/LessonViewerModal';
 
 
 interface EditModalProps {
@@ -49,6 +50,8 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
     const [error, setError] = useState<string | null>(null);
     const [zoom, setZoom] = useState(50);
     const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
+    const [activeLesson, setActiveLesson] = useState<number | null>(null);
+    const [courseProgress, setCourseProgress] = useState<Record<string, 'completed'>>({});
 
     useEffect(() => {
         // Initialize editable data when the modal opens or the section changes
@@ -102,16 +105,41 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
         if (!editableData) return null;
         const theme = pageData.theme;
         
-        const getPreviewImage = (originalKey: string, newPromptOrUrl?: string) => {
-            if (newPromptOrUrl?.startsWith('http') || newPromptOrUrl?.startsWith('data:image')) {
-                return newPromptOrUrl;
-            }
-            return images[originalKey];
-        };
+            const handleStartLesson = (lessonIndex: number) => {
+        setActiveLesson(lessonIndex);
+    };
 
+    const handleCompleteLesson = (lessonId: string) => {
+        setCourseProgress(prev => ({...prev, [lessonId]: 'completed'}));
+    };
+
+    const getPreviewImage = (key: string, prompt: string): string => {
+        // If it's already a URL or data URL, return it directly
+        if (images[key]?.startsWith('http') || images[key]?.startsWith('data:image')) {
+            return images[key];
+        }
+        // Return existing image or empty string
+        return images[key] || '';
+    };
+
+    const previewContent = () => {
+        const theme = pageData.theme;
+        
         switch(sectionKey) {
             case 'nav': {
                 const logoImage = getPreviewImage('logo', editableData.logoImagePrompt);
+                return <Navbar 
+                    section={editableData}
+                    theme={theme}
+                    logoUrl={logoImage}
+                    onRegenerateImage={() => {}}
+                    regeneratingImages={[]}
+                    allSections={allSections}
+                    allPages={allPages}
+                    currentPageId=""
+                    hideNavAdminControls={true}
+                />;
+            }
                 return <Navbar nav={editableData} theme={theme} image={logoImage} isRegenerating={false} cartItemCount={0} onCartClick={() => {}} onSignInClick={() => {}} onBookingClick={() => {}} />;
             }
             case 'hero': {
@@ -153,7 +181,7 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
                         dynamicImages[key] = getPreviewImage(key, chapter.imagePrompt);
                     }
                  });
-                return <CourseSection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={() => {}} regeneratingImages={[]} hasAccess={true} onEnroll={() => {}} progress={{}} onStartLesson={() => {}} onTakeQuiz={() => alert("Quizzes can be taken in the main editor view.")} />;
+                return <CourseSection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={() => {}} regeneratingImages={[]} hasAccess={true} onEnroll={() => {}} progress={courseProgress} onStartLesson={handleStartLesson} onTakeQuiz={() => alert("Quizzes can be taken in the main editor view.")} />;
             }
             case 'video': return <VideoSection section={editableData} theme={theme} />;
             case 'testimonials': {
@@ -266,6 +294,22 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
                     </button>
                 </footer>
             </div>
+            
+            {/* Lesson Viewer Modal for Course Section Preview */}
+            {activeLesson !== null && editableData && sectionKey === 'course' && (
+                <LessonViewerModal
+                    course={editableData}
+                    theme={pageData.theme}
+                    images={images}
+                    initialLessonIndex={activeLesson}
+                    progress={courseProgress}
+                    onClose={() => setActiveLesson(null)}
+                    onCompleteLesson={handleCompleteLesson}
+                    onNavigate={setActiveLesson}
+                    pageId="preview"
+                    userId={userId}
+                />
+            )}
         </div>
     );
 };

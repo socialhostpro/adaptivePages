@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import type { ManagedPage, ManagedProduct, CartItem, CourseSectionData, CourseChapter } from './src/types';
 import LoaderIcon from './components/icons/LoaderIcon';
@@ -6,7 +5,7 @@ import LandingPagePreview from './components/LandingPagePreview';
 import CartModal from './components/CartModal';
 import CheckoutModal from './components/CheckoutModal';
 import BookingModal from './components/BookingModal';
-import { LessonViewerModal } from './components/LessonViewerModal';
+import LessonViewerModal from './components/LessonViewerModal';
 import CustomerPortalModal from './components/CustomerPortalModal';
 import * as productService from './services/productService';
 import QuizModal from './components/QuizModal';

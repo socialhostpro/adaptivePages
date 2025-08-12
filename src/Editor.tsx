@@ -23,4 +23,4 @@ import { supabase } from '../services/supabase';
 import type { 
     LandingPageData,
     ManagedPage 
-} from './types';
+} from './types'; 

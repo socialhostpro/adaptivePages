@@ -163,6 +163,8 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
   
    const groupedPages = useMemo(() => {
         const pageGroups: Record<string, ManagedPage[]> = {};
@@ -383,7 +385,12 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
     if (hasChildren) {
       setExpandedMenus(prev => ({ ...prev, [key]: !prev[key] }));
     } else {
-      setActiveTab(key);
+      // Default to userInfo tab when accessing profile section
+      if (key === 'profile') {
+        setActiveTab('profile.userInfo');
+      } else {
+        setActiveTab(key);
+      }
       onLinkClick();
     }
   };

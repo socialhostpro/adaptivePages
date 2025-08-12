@@ -164,6 +164,8 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
+
+  if (!isOpen) return null;
   
    const groupedPages = useMemo(() => {
         const pageGroups: Record<string, ManagedPage[]> = {};
@@ -364,7 +366,12 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
     if (hasChildren) {
       setExpandedMenus(prev => ({ ...prev, [key]: !prev[key] }));
     } else {
-      setActiveTab(key);
+      // Default to userInfo tab when accessing profile section
+      if (key === 'profile') {
+        setActiveTab('profile.userInfo');
+      } else {
+        setActiveTab(key);
+      }
       onLinkClick();
     }
   };
@@ -451,7 +458,9 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
   );
 
   const renderContent = () => {
+    console.log('🚀 renderContent called with activeTab:', activeTab);
     const mainTab = activeTab.split('.')[0];
+    console.log('🚀 mainTab extracted:', mainTab);
     const commonTaskProps = {
         allTasks: allTasks,
         team: team,
@@ -668,9 +677,9 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
                             Video Paywall
                         </button>
                         <button 
-                            onClick={() => setActiveTab('profile')}
+                            onClick={() => setActiveTab('profile.userInfo')}
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
-                                activeTab === 'profile' 
+                                activeTab.startsWith('profile') 
                                     ? 'bg-blue-600 text-white' 
                                     : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
                             }`}

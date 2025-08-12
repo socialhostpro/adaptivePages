@@ -1,4 +1,3 @@
-
 import React, { useState, useCallback, useEffect, useRef, Suspense } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
 import { supabase } from './services/supabase';
@@ -34,7 +33,7 @@ const CheckoutModal = React.lazy(() => import('./components/CheckoutModal'));
 const BookingModal = React.lazy(() => import('./components/BookingModal'));
 const PublishModal = React.lazy(() => import('./PublishModal'));
 const AppSettingsModal = React.lazy(() => import('./AppSettingsModal'));
-const LessonViewerModal = React.lazy(() => import('./components/LessonViewerModal').then(module => ({ default: module.LessonViewerModal })));
+const LessonViewerModal = React.lazy(() => import('./components/LessonViewerModal'));
 const CustomerPortalModal = React.lazy(() => import('./components/CustomerPortalModal'));
 const QuizModal = React.lazy(() => import('./components/QuizModal'));
 const OnboardingWizardModal = React.lazy(() => import('./components/OnboardingWizardModal'));
@@ -1118,6 +1117,8 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
             )}
             {activeLesson !== null && landingPageData?.course && activePage && (
                 <Suspense fallback={<ModalLoader />}>
+                    {console.log('activeLesson:', activeLesson)}
+                    {console.log('landingPageData.course:', landingPageData?.course)}
                     <LessonViewerModal
                         course={landingPageData.course}
                         theme={landingPageData.theme}

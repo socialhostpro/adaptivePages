@@ -1,8 +1,3 @@
-
-
-
-
-
 import React, { useState, useEffect } from 'react';
 import type { ManagedPage, LandingPageData, ImageStore } from './src/types';
 import * as pageService from './services/pageService';
@@ -42,9 +37,14 @@ const PublishModal: React.FC<PublishModalProps> = ({ isOpen, onClose, page, page
     const [customDomain, setCustomDomain] = useState(page.customDomain || '');
     const [copyStatus, setCopyStatus] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
+    const [localIsPublished, setLocalIsPublished] = useState(page.isPublished);
 
     useEffect(() => {
-        if (page.isPublished && pageData && page.publishedData) {
+        setLocalIsPublished(page.isPublished);
+    }, [page.isPublished]);
+
+    useEffect(() => {
+        if ((page.isPublished || localIsPublished) && pageData && page.publishedData) {
             // Using stringify for a deep-enough comparison for this use case.
             const currentDataString = JSON.stringify(pageData);
             const publishedDataString = JSON.stringify(page.publishedData);
@@ -59,7 +59,7 @@ const PublishModal: React.FC<PublishModalProps> = ({ isOpen, onClose, page, page
         } else {
             setIsDirty(false);
         }
-    }, [page.isPublished, page.publishedData, page.publishedImages, pageData, images]);
+    }, [page.isPublished, localIsPublished, page.publishedData, page.publishedImages, pageData, images]);
 
 
     useEffect(() => {
@@ -72,6 +72,7 @@ const PublishModal: React.FC<PublishModalProps> = ({ isOpen, onClose, page, page
     }, [isOpen, onClose]);
 
     const publicUrl = `${window.location.origin}/#/${page.slug}`;
+    const publishedUrl = page.customDomain ? `https://${page.customDomain}` : `https://${page.slug}.adaptivepages.com`;
 
     const handlePublish = async () => {
         if (!pageData) {
@@ -92,6 +93,7 @@ const PublishModal: React.FC<PublishModalProps> = ({ isOpen, onClose, page, page
             }
 
             await pageService.publishPage(page.id, dataToPublish, images);
+            setLocalIsPublished(true); // Immediately update local state
             onUpdate();
         } catch(e) {
             console.error(e);
@@ -105,6 +107,7 @@ const PublishModal: React.FC<PublishModalProps> = ({ isOpen, onClose, page, page
         setIsProcessing(true);
         try {
             await pageService.unpublishPage(page.id);
+            setLocalIsPublished(false); // Immediately update local state
             onUpdate();
         } catch(e) {
             console.error(e);
@@ -142,22 +145,22 @@ const PublishModal: React.FC<PublishModalProps> = ({ isOpen, onClose, page, page
             <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl h-auto max-h-[90vh] flex flex-col overflow-hidden border dark:border-slate-700" onClick={(e) => e.stopPropagation()}>
                 <header className="p-4 border-b dark:border-slate-700 flex justify-between items-center flex-shrink-0">
                     <h2 className="text-xl font-bold text-gray-800 dark:text-slate-200">Publish Settings</h2>
-                    <button onClick={onClose} className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700">
+                    <button onClick={onClose} className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700" title="Close">
                         <XIcon className="w-6 h-6" />
                     </button>
                 </header>
 
                 <div className="p-6 space-y-6 overflow-y-auto">
-                    <div className={`p-4 rounded-lg ${page.isPublished ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-slate-700/50'}`}>
+                    <div className={`p-4 rounded-lg ${(page.isPublished || localIsPublished) ? 'bg-green-100 dark:bg-green-900/30' : 'bg-gray-100 dark:bg-slate-700/50'}`}>
                         <h3 className="font-semibold text-lg text-gray-800 dark:text-slate-200">
-                            Status: {page.isPublished ? <span className="text-green-600 dark:text-green-400">Published</span> : "Draft"}
+                            Status: {(page.isPublished || localIsPublished) ? <span className="text-green-600 dark:text-green-400">Published</span> : "Draft"}
                         </h3>
-                        {page.isPublished && (
+                        {(page.isPublished || localIsPublished) && (
                             <div className="mt-2">
                                 <label className="text-sm font-semibold text-gray-700 dark:text-slate-300">Public URL</label>
                                 <div className="flex items-center gap-2 mt-1">
                                     <a href={publicUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 dark:text-indigo-400 bg-gray-200 dark:bg-slate-600 px-2 py-1 rounded-md truncate hover:underline">{publicUrl}</a>
-                                    <button onClick={handleCopy} className="p-2 rounded-md bg-gray-200 dark:bg-slate-600 hover:bg-gray-300 dark:hover:bg-slate-500">
+                                    <button onClick={handleCopy} className="p-2 rounded-md bg-gray-200 dark:bg-slate-600 hover:bg-gray-300 dark:hover:bg-slate-500" title="Copy URL">
                                         <CopyIcon className="w-4 h-4" />
                                     </button>
                                 </div>
@@ -165,7 +168,7 @@ const PublishModal: React.FC<PublishModalProps> = ({ isOpen, onClose, page, page
                             </div>
                         )}
                         <div className="mt-4 flex items-center gap-2">
-                            {page.isPublished ? (
+                            {(page.isPublished || localIsPublished) ? (
                                 <>
                                     <button onClick={handleUnpublish} disabled={isProcessing} className="py-2 px-4 rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:bg-red-400">
                                         {isProcessing ? <LoaderIcon className="w-5 h-5"/> : 'Unpublish'}
@@ -208,6 +211,13 @@ const PublishModal: React.FC<PublishModalProps> = ({ isOpen, onClose, page, page
                             {isProcessing ? <LoaderIcon className="w-5 h-5 mx-auto"/> : 'Save URL Settings'}
                         </button>
                     </form>
+
+                    {(page.isPublished || localIsPublished) && (
+                        <div className="pt-4 border-t dark:border-slate-600">
+                            <h4 className="text-md font-semibold text-gray-800 dark:text-slate-200 mb-2">Published URL</h4>
+                            <a href={publishedUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-indigo-600 dark:text-indigo-400 bg-gray-200 dark:bg-slate-600 px-2 py-1 rounded-md truncate hover:underline">{publishedUrl}</a>
+                        </div>
+                    )}
                 </div>
             </div>
         </div>
