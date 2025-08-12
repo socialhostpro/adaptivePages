@@ -731,6 +731,10 @@ export async function enhanceTaskDescription(description: string): Promise<{ enh
 }
 
 export async function enhanceTaskPrompt(prompt: string): Promise<string> {
+  if (!ai) {
+    throw new Error('Gemini AI is not configured. Please add your API key to the environment variables.');
+  }
+  
   const fullPrompt = `
     You are an AI assistant tasked with taking a user's simple prompt for a task and expanding it into a detailed, step-by-step set of instructions for another AI to follow.
     - The output should be a single block of text.

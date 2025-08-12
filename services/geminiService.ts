@@ -5,11 +5,14 @@ import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 import { LANDING_PAGE_SCHEMA, MediaFile, ProductCategory, ManagedProduct, SEOData, SiteComponent, Veo3Prompt, SEO_REPORT_SCHEMA } from '../types';
 import type { LandingPageData } from '../types';
 
-if (!process.env.API_KEY) {
-  throw new Error("API_KEY environment variable not set");
+// Get API key from environment variables (Vite format)
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.API_KEY || import.meta.env.GEMINI_API_KEY || process.env.API_KEY;
+
+if (!apiKey) {
+  console.warn("Gemini API key not found in environment variables. AI features will be disabled.");
 }
 
-const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 // Helper to build a tree and then format it for the prompt
 const formatCategoryTreeForPrompt = (categories: ProductCategory[]): string => {
@@ -726,6 +729,10 @@ export async function enhanceTaskDescription(description: string): Promise<{ enh
 }
 
 export async function enhanceTaskPrompt(prompt: string): Promise<string> {
+  if (!ai) {
+    throw new Error('Gemini AI is not configured. Please add your API key to the environment variables.');
+  }
+  
   const fullPrompt = `
     You are an AI assistant tasked with taking a user's simple prompt for a task and expanding it into a detailed, step-by-step set of instructions for another AI to follow.
     - The output should be a single block of text.
