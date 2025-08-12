@@ -88,7 +88,17 @@ const Navbar: React.FC<NavbarProps> = ({ nav, theme, image, isRegenerating, cart
         return <div className="w-32 h-10 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />;
     };
 
-    const menuItemsContent = (nav.menuItems || []).map(item => {
+    // Fallback menu items if none are provided
+    const defaultMenuItems = [
+        { text: 'Home', link: '#hero' },
+        { text: 'About', link: '#features' },
+        { text: 'Services', link: '#products' },
+        { text: 'Contact', link: '#contact' }
+    ];
+    
+    const menuItems = nav.menuItems && nav.menuItems.length > 0 ? nav.menuItems : defaultMenuItems;
+    
+    const menuItemsContent = menuItems.map(item => {
         const isExternal = item.link?.startsWith('http');
         return (
             <a
@@ -181,7 +191,7 @@ const Navbar: React.FC<NavbarProps> = ({ nav, theme, image, isRegenerating, cart
                         </button>
                     </div>
                     <div className="flex flex-col items-center justify-center flex-grow gap-4">
-                        {(nav.menuItems || []).map(item => {
+                        {menuItems.map(item => {
                             const isExternal = item.link?.startsWith('http');
                             return (
                                 <a key={item.text} href={item.link} onClick={(e) => handleNavClick(e, item.link)}
@@ -206,7 +216,7 @@ const Navbar: React.FC<NavbarProps> = ({ nav, theme, image, isRegenerating, cart
             {nav.mobileLayout === 'bottom' && (
                 <div className={`md:hidden fixed bottom-0 left-0 right-0 h-16 bg-white/80 dark:bg-slate-900/80 backdrop-blur-lg border-t border-gray-200/80 dark:border-slate-700/80 z-50`}>
                     <div className="max-w-7xl mx-auto px-2 h-full grid grid-cols-5 items-center">
-                        {(nav.menuItems || []).slice(0, 5).map(item => (
+                        {menuItems.slice(0, 5).map(item => (
                             <a key={item.text} href={item.link} onClick={(e) => handleNavClick(e, item.link)} className="flex flex-col items-center justify-center text-center text-gray-600 dark:text-gray-300 hover:text-indigo-500 dark:hover:text-indigo-400">
                                 <DynamicIcon iconName={item.iconName || 'HelpCircle'} className="w-6 h-6 mb-0.5" />
                                 <span className="text-[10px] font-medium truncate">{item.text}</span>

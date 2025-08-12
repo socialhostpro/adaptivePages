@@ -9,7 +9,7 @@
 
 ### 2. **Google Gemini API Key** ✅  
 - **Problem**: `API_KEY environment variable not set`
-- **Solution**: Added `GEMINI_API_KEY=AIzaSyB_mBTYdkC5G-PGCpZyYf8rC66Nkom_F8Y` to `.env.local`
+- **Solution**: Added `GEMINI_API_KEY=your_api_key_here` to `.env.local`
 - **Status**: **FIXED** - Gemini API properly configured
 
 ### 3. **Development Server Port** ✅
@@ -40,7 +40,7 @@ Your app is now properly configured and running on **http://localhost:5173**
 Your `.env.local` file now contains:
 ```bash
 # Google Gemini AI Configuration
-GEMINI_API_KEY=AIzaSyB_mBTYdkC5G-PGCpZyYf8rC66Nkom_F8Y
+GEMINI_API_KEY=your_api_key_here
 
 # Supabase Configuration  
 VITE_SUPABASE_URL=https://rxkywcylrtoirshfqqpd.supabase.co

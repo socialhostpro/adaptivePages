@@ -1,3 +1,8 @@
 // This file should ideally be in .gitignore and credentials managed via environment variables
-export const supabaseUrl = 'https://rxkywcylrtoirshfqqpd.supabase.co';
-export const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4a3l3Y3lscnRvaXJzaGZxcXBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTI1MjQ5ODYsImV4cCI6MjA2ODEwMDk4Nn0.M79J1j4-bpKpqlCLmHylOX64vbudaBwrBD6-e1fQ18M';
+export const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || '';
+export const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || '';
+
+// Validate required environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ Missing required environment variables: VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY');
+}

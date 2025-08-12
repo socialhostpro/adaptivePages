@@ -653,7 +653,7 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
     const handleOpenEditModal = (sectionKey: string) => { if (!isLoading) setEditingSectionKey(sectionKey); };
     const handleCloseEditModal = () => setEditingSectionKey(null);
   
-    const handleSaveSection = async (sectionKey: string, newSectionData: any) => {
+    const handleSaveSection = async (sectionKey: string, newSectionData: any, newImages?: Record<string, string>) => {
         if (!landingPageData || !activePage) return;
 
         const oldSectionData = landingPageData[sectionKey as keyof LandingPageData];
@@ -692,6 +692,11 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
         }
         
         let finalImages = { ...images };
+        
+        // First, incorporate any new images from the EditModal
+        if (newImages) {
+            finalImages = { ...finalImages, ...newImages };
+        }
         
         // Generate new images if any prompts changed
         if (imagePromptsToUpdate.length > 0) {

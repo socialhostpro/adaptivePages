@@ -12,6 +12,13 @@ dist
 dist-ssr
 *.local
 
+# Environment variables - NEVER COMMIT THESE
+.env.local
+.env.local.development
+.env.production
+.env.development
+supabaseCredentials.ts
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json

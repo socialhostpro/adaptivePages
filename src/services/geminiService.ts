@@ -4,11 +4,14 @@ import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 import { LANDING_PAGE_SCHEMA, MediaFile, ProductCategory, ManagedProduct, SEOData, SiteComponent, Veo3Prompt, SEO_REPORT_SCHEMA } from '../types';
 import type { LandingPageData } from '../types';
 
-// Get API key from environment variables (Vite format)
+// Get API key from environment variables (Vite format) - NO HARDCODED FALLBACKS FOR SECURITY
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.API_KEY || import.meta.env.GEMINI_API_KEY;
 
 if (!apiKey) {
   console.warn("Gemini API key not found in environment variables. AI features will be disabled.");
+  console.warn("Please set VITE_GEMINI_API_KEY environment variable.");
+} else {
+  console.log("Gemini API key loaded successfully. Length:", apiKey.length);
 }
 
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
@@ -47,12 +50,21 @@ const formatCategoryTreeForPrompt = (categories: ProductCategory[]): string => {
 const handleGeminiError = (error: unknown, context: string): Error => {
     const err = error as Error;
     console.error(`Error in ${context}:`, err.message, err);
+    
+    // Check for various authentication and permission errors
+    if (err.message.includes("PERMISSION_DENIED") || err.message.includes("code:403") || err.message.includes("unregistered callers")) {
+        return new Error("Authentication failed with the Gemini API. Please check that your API key is valid and has the necessary permissions. Try refreshing the page or clearing your browser cache.");
+    }
     if (err.message.includes("Model isn't available")) {
         return new Error("The AI model is currently busy or unavailable. Please wait a moment and try again.");
     }
-    if (err.message.includes("API key not valid")) {
+    if (err.message.includes("API key not valid") || err.message.includes("API_KEY_INVALID")) {
         return new Error("The configured API key is not valid. Please check your settings.");
     }
+    if (err.message.includes("QUOTA_EXCEEDED") || err.message.includes("quota")) {
+        return new Error("API quota exceeded. Please check your Google Cloud billing or try again later.");
+    }
+    
     return new Error(`An unexpected error occurred with the AI service during ${context}. Details: ${err.message}`);
 };
 

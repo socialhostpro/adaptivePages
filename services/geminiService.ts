@@ -5,11 +5,14 @@ import { GoogleGenAI, GenerateContentResponse, Type } from "@google/genai";
 import { LANDING_PAGE_SCHEMA, MediaFile, ProductCategory, ManagedProduct, SEOData, SiteComponent, Veo3Prompt, SEO_REPORT_SCHEMA } from '../types';
 import type { LandingPageData } from '../types';
 
-// Get API key from environment variables (Vite format)
+// Get API key from environment variables (Vite format) - NO HARDCODED FALLBACKS FOR SECURITY
 const apiKey = import.meta.env.VITE_GEMINI_API_KEY || import.meta.env.API_KEY || import.meta.env.GEMINI_API_KEY || process.env.API_KEY;
 
 if (!apiKey) {
   console.warn("Gemini API key not found in environment variables. AI features will be disabled.");
+  console.warn("Please set VITE_GEMINI_API_KEY environment variable.");
+} else {
+  console.log("Gemini API key loaded successfully. Length:", apiKey.length);
 }
 
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;

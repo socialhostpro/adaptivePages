@@ -11,7 +11,7 @@ import CTASection from './sections/CTASection';
 import VideoSection from './sections/VideoSection';
 import BookingSection from './sections/BookingSection';
 import ContactSection from './sections/ContactSection';
-import { regenerateSectionContent } from '../services/geminiService';
+import { regenerateSectionContent, generateImageForPrompt } from '../services/geminiService';
 import SectionEditForm from './SectionEditForm';
 import Navbar from './Navbar';
 import XIcon from './icons/XIcon';
@@ -33,7 +33,7 @@ interface EditModalProps {
     tone: string;
     palette: string;
     onClose: () => void;
-    onSave: (sectionKey: string, newSectionData: any) => Promise<void>;
+    onSave: (sectionKey: string, newSectionData: any, newImages?: Record<string, string>) => Promise<void>;
     mediaLibrary: MediaFile[];
     onUploadFile: (file: File) => Promise<void>;
     allProducts: ManagedProduct[];
@@ -50,6 +50,8 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
     const [error, setError] = useState<string | null>(null);
     const [zoom, setZoom] = useState(50);
     const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
+    const [regeneratingImages, setRegeneratingImages] = useState<string[]>([]);
+    const [previewImages, setPreviewImages] = useState<Record<string, string>>({});
 
     useEffect(() => {
         // Initialize editable data when the modal opens or the section changes
@@ -85,11 +87,27 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
         }
     };
 
+    const handleImageRegenerate = async (imageKey: string, prompt: string) => {
+        try {
+            setRegeneratingImages(prev => [...prev, imageKey]);
+            const newImageUrl = await generateImageForPrompt(prompt);
+            setPreviewImages(prev => ({
+                ...prev,
+                [imageKey]: newImageUrl
+            }));
+        } catch (error) {
+            console.error('Failed to regenerate image:', error);
+            setError('Failed to regenerate image. Please try again.');
+        } finally {
+            setRegeneratingImages(prev => prev.filter(key => key !== imageKey));
+        }
+    };
+
     const handleSave = async () => {
         setIsSaving(true);
         setError(null);
         try {
-            await onSave(sectionKey, editableData);
+            await onSave(sectionKey, editableData, previewImages);
             onClose();
         } catch (e) {
             console.error("Failed to save from modal:", e);
@@ -104,9 +122,15 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
         const theme = pageData.theme;
         
         const getPreviewImage = (originalKey: string, newPromptOrUrl?: string) => {
+            // First check if we have a regenerated preview image
+            if (previewImages[originalKey]) {
+                return previewImages[originalKey];
+            }
+            // Then check if we have a new prompt/URL from editing
             if (newPromptOrUrl?.startsWith('http') || newPromptOrUrl?.startsWith('data:image')) {
                 return newPromptOrUrl;
             }
+            // Finally fall back to the original image
             return images[originalKey];
         };
 
@@ -128,7 +152,7 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
                         dynamicImages[`hero_slider_${i}`] = getPreviewImage(`hero_slider_${i}`, slide.imagePrompt);
                     });
                 }
-                return <HeroSection section={editableData} theme={theme} images={dynamicImages} onRegenerate={() => {}} regeneratingImages={[]} allForms={customForms} />;
+                return <HeroSection section={editableData} theme={theme} images={dynamicImages} onRegenerate={handleImageRegenerate} regeneratingImages={regeneratingImages} allForms={customForms} />;
             }
             case 'features': return <FeaturesSection section={editableData} theme={theme} />;
             case 'whyChooseUs': return <WhyChooseUsSection section={editableData} theme={theme} />;
@@ -138,10 +162,10 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
                     const key = `gallery_${index}`;
                     dynamicImages[key] = getPreviewImage(key, item.imagePrompt);
                 });
-                return <GallerySection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={() => {}} regeneratingImages={[]} />;
+                return <GallerySection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={handleImageRegenerate} regeneratingImages={regeneratingImages} />;
             }
             case 'products': {
-                return <ProductsSection section={editableData} allProducts={allProducts} theme={theme} images={images} onAddToCart={() => {}} regeneratingImages={[]} onRegenerateImage={() => {}} />;
+                return <ProductsSection section={editableData} allProducts={allProducts} theme={theme} images={images} onAddToCart={() => {}} regeneratingImages={regeneratingImages} onRegenerateImage={handleImageRegenerate} />;
             }
             case 'course': {
                  const dynamicImages = { ...images };
@@ -154,7 +178,7 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
                         dynamicImages[key] = getPreviewImage(key, chapter.imagePrompt);
                     }
                  });
-                return <CourseSection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={() => {}} regeneratingImages={[]} hasAccess={true} onEnroll={() => {}} progress={{}} onStartLesson={() => {}} onTakeQuiz={() => alert("Quizzes can be taken in the main editor view.")} />;
+                return <CourseSection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={handleImageRegenerate} regeneratingImages={regeneratingImages} hasAccess={true} onEnroll={() => {}} progress={{}} onStartLesson={() => {}} onTakeQuiz={() => alert("Quizzes can be taken in the main editor view.")} />;
             }
             case 'video': return <VideoSection section={editableData} theme={theme} />;
             case 'testimonials': {
@@ -163,7 +187,7 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
                     const key = `testimonial_${index}`;
                     dynamicImages[key] = getPreviewImage(key, item.avatarImagePrompt);
                 });
-                return <TestimonialsSection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={() => {}} regeneratingImages={[]} />;
+                return <TestimonialsSection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={handleImageRegenerate} regeneratingImages={regeneratingImages} />;
             }
             case 'pricing': return <PricingSection section={editableData} theme={theme} />;
             case 'faq': return <FAQSection section={editableData} theme={theme} />;

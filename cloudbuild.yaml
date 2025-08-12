@@ -31,6 +31,20 @@ steps:
     - '0'
     - '--max-instances'
     - '10'
+    - '--set-env-vars'
+    - 'VITE_SUPABASE_URL=${_SUPABASE_URL}'
+    - '--set-env-vars'
+    - 'VITE_SUPABASE_ANON_KEY=${_SUPABASE_ANON_KEY}'
+    - '--set-env-vars'
+    - 'VITE_GEMINI_API_KEY=${_GEMINI_API_KEY}'
+    - '--set-env-vars'
+    - 'API_KEY=${_GEMINI_API_KEY}'
+    - '--set-env-vars'
+    - 'GEMINI_API_KEY=${_GEMINI_API_KEY}'
+    - '--set-env-vars'
+    - 'VITE_ENV=production'
+    - '--set-env-vars'
+    - 'VITE_DEBUG=false'
 
 images:
 - gcr.io/$PROJECT_ID/adaptive-pages

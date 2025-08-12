@@ -11,7 +11,7 @@ import CTASection from './sections/CTASection';
 import VideoSection from './sections/VideoSection';
 import BookingSection from './sections/BookingSection';
 import ContactSection from './sections/ContactSection';
-import { regenerateSectionContent } from '../services/geminiService';
+import { regenerateSectionContent, generateImageForPrompt } from '../services/geminiService';
 import SectionEditForm from './SectionEditForm';
 import Navbar from './Navbar';
 import XIcon from './icons/XIcon';
@@ -33,7 +33,7 @@ interface EditModalProps {
     tone: string;
     palette: string;
     onClose: () => void;
-    onSave: (sectionKey: string, newSectionData: any) => Promise<void>;
+    onSave: (sectionKey: string, newSectionData: any, newImages?: Record<string, string>) => Promise<void>;
     mediaLibrary: MediaFile[];
     onUploadFile: (file: File) => Promise<void>;
     allProducts: ManagedProduct[];
@@ -50,6 +50,8 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
     const [error, setError] = useState<string | null>(null);
     const [zoom, setZoom] = useState(50);
     const [activeTab, setActiveTab] = useState<'edit' | 'preview'>('edit');
+    const [regeneratingImages, setRegeneratingImages] = useState<string[]>([]);
+    const [previewImages, setPreviewImages] = useState<Record<string, string>>({});
 
     useEffect(() => {
         // Initialize editable data when the modal opens or the section changes
@@ -89,7 +91,8 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
         setIsSaving(true);
         setError(null);
         try {
-            await onSave(sectionKey, editableData);
+            // Pass both the section data and any regenerated images back to the main editor
+            await onSave(sectionKey, editableData, previewImages);
             onClose();
         } catch (e) {
             console.error("Failed to save from modal:", e);
@@ -98,22 +101,57 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
             setIsSaving(false);
         }
     };
+
+    const handleImageRegenerate = async (imageKey: string, prompt: string, aspectRatio: '16:9' | '1:1' = '16:9') => {
+        if (!prompt?.trim()) {
+            setError('No image prompt available for regeneration.');
+            return;
+        }
+        
+        setRegeneratingImages(prev => [...prev, imageKey]);
+        setError(null);
+        
+        try {
+            const newImageData = await generateImageForPrompt(prompt, aspectRatio);
+            const newImageUrl = `data:image/jpeg;base64,${newImageData}`;
+            
+            // Update preview images for immediate visual feedback
+            setPreviewImages(prev => ({
+                ...prev,
+                [imageKey]: newImageUrl
+            }));
+            
+        } catch (e) {
+            console.error(`Failed to regenerate image for ${imageKey}:`, e);
+            setError(`Failed to regenerate image: ${(e as Error).message}`);
+        } finally {
+            setRegeneratingImages(prev => prev.filter(key => key !== imageKey));
+        }
+    };
+
+    const getPreviewImage = (originalKey: string, newPromptOrUrl?: string) => {
+        // Check if we have a regenerated image in preview state
+        if (previewImages[originalKey]) {
+            return previewImages[originalKey];
+        }
+        
+        // Check if the new prompt/URL is actually a URL (http or data URI)
+        if (newPromptOrUrl?.startsWith('http') || newPromptOrUrl?.startsWith('data:image')) {
+            return newPromptOrUrl;
+        }
+        
+        // Fall back to original images
+        return images[originalKey] || '';
+    };
     
     const previewContent = () => {
         if (!editableData) return null;
         const theme = pageData.theme;
-        
-        const getPreviewImage = (originalKey: string, newPromptOrUrl?: string) => {
-            if (newPromptOrUrl?.startsWith('http') || newPromptOrUrl?.startsWith('data:image')) {
-                return newPromptOrUrl;
-            }
-            return images[originalKey];
-        };
 
         switch(sectionKey) {
             case 'nav': {
                 const logoImage = getPreviewImage('logo', editableData.logoImagePrompt);
-                return <Navbar nav={editableData} theme={theme} image={logoImage} isRegenerating={false} cartItemCount={0} onCartClick={() => {}} onSignInClick={() => {}} onBookingClick={() => {}} />;
+                return <Navbar nav={editableData} theme={theme} image={logoImage} isRegenerating={regeneratingImages.includes('logo')} cartItemCount={0} onCartClick={() => {}} onSignInClick={() => {}} onBookingClick={() => {}} />;
             }
             case 'hero': {
                 const dynamicImages: ImageStore = { ...images };
@@ -128,7 +166,7 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
                         dynamicImages[`hero_slider_${i}`] = getPreviewImage(`hero_slider_${i}`, slide.imagePrompt);
                     });
                 }
-                return <HeroSection section={editableData} theme={theme} images={dynamicImages} onRegenerate={() => {}} regeneratingImages={[]} allForms={customForms} />;
+                return <HeroSection section={editableData} theme={theme} images={dynamicImages} onRegenerate={handleImageRegenerate} regeneratingImages={regeneratingImages} allForms={customForms} />;
             }
             case 'features': return <FeaturesSection section={editableData} theme={theme} />;
             case 'whyChooseUs': return <WhyChooseUsSection section={editableData} theme={theme} />;
@@ -138,10 +176,10 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
                     const key = `gallery_${index}`;
                     dynamicImages[key] = getPreviewImage(key, item.imagePrompt);
                 });
-                return <GallerySection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={() => {}} regeneratingImages={[]} />;
+                return <GallerySection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={handleImageRegenerate} regeneratingImages={regeneratingImages} />;
             }
             case 'products': {
-                return <ProductsSection section={editableData} allProducts={allProducts} theme={theme} images={images} onAddToCart={() => {}} regeneratingImages={[]} onRegenerateImage={() => {}} />;
+                return <ProductsSection section={editableData} allProducts={allProducts} theme={theme} images={images} onAddToCart={() => {}} regeneratingImages={regeneratingImages} onRegenerateImage={handleImageRegenerate} />;
             }
             case 'course': {
                  const dynamicImages = { ...images };
@@ -154,7 +192,7 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
                         dynamicImages[key] = getPreviewImage(key, chapter.imagePrompt);
                     }
                  });
-                return <CourseSection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={() => {}} regeneratingImages={[]} hasAccess={true} onEnroll={() => {}} progress={{}} onStartLesson={() => {}} onTakeQuiz={() => alert("Quizzes can be taken in the main editor view.")} />;
+                return <CourseSection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={handleImageRegenerate} regeneratingImages={regeneratingImages} hasAccess={true} onEnroll={() => {}} progress={{}} onStartLesson={() => {}} onTakeQuiz={() => alert("Quizzes can be taken in the main editor view.")} />;
             }
             case 'video': return <VideoSection section={editableData} theme={theme} />;
             case 'testimonials': {
@@ -163,7 +201,7 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
                     const key = `testimonial_${index}`;
                     dynamicImages[key] = getPreviewImage(key, item.avatarImagePrompt);
                 });
-                return <TestimonialsSection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={() => {}} regeneratingImages={[]} />;
+                return <TestimonialsSection section={editableData} theme={theme} images={dynamicImages} onRegenerateImage={handleImageRegenerate} regeneratingImages={regeneratingImages} />;
             }
             case 'pricing': return <PricingSection section={editableData} theme={theme} />;
             case 'faq': return <FAQSection section={editableData} theme={theme} />;
