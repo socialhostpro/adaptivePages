@@ -149,6 +149,11 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
         }
     }, [localBusinessData]);
     
+    // Debug landing page data changes
+    useEffect(() => {
+        console.log('🎯 landingPageData state changed:', landingPageData ? 'HAS DATA' : 'NO DATA', landingPageData);
+    }, [landingPageData]);
+    
     // TEMPORARILY DISABLE CACHE - USE DIRECT LOADING
     const [managedPages, setManagedPages] = useState<ManagedPage[]>([]);
     const [isPagesLoading, setIsPagesLoading] = useState(true);
@@ -562,7 +567,9 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
         setHasUnsavedChanges(true); // A full generation is an unsaved change until saved.
 
         try {
+            console.log('🚀 Starting page generation...', { prompt, tone, palette, sectionOrder, industry });
             const data = await generateLandingPageStructure(prompt, tone, palette, sectionOrder, industry, userMediaFiles, productCategories, managedProducts, undefined, oldSiteUrl, inspirationUrl, localBusinessData);
+            console.log('✅ Generated page data:', data);
             
             let finalData: LandingPageData = { ...data, products: undefined };
 
@@ -603,6 +610,7 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
                 };
             }
             
+            console.log('✅ About to set finalData:', finalData);
             setLandingPageData(finalData);
             console.log('🎯 Setting landingPageData in Editor:', finalData);
             if (finalData.sectionOrder) setSectionOrder(finalData.sectionOrder);
@@ -674,9 +682,16 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
             
         } catch (e) {
             const err = e as Error;
-            console.error('Error during page generation:', err.message, err);
+            console.error('❌ Error during page generation:', {
+                message: err.message,
+                stack: err.stack,
+                error: err
+            });
             setError(err.message || 'An unknown error occurred.');
+            // Make sure the loading state is cleared even on error
+            setLandingPageData(null);
         } finally {
+            console.log('🏁 Generation process finished, setting loading to false');
             setIsLoading(false);
         }
     }, [prompt, tone, palette, sectionOrder, industry, activePage, userMediaFiles, productCategories, managedProducts, session.user.id, oldSiteUrl, inspirationUrl, refreshAllData]);

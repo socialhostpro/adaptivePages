@@ -17,6 +17,28 @@ if (!apiKey) {
 
 const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
+// Test function to verify API connectivity
+export async function testGeminiConnection(): Promise<boolean> {
+  if (!ai) {
+    console.error('❌ Gemini AI not configured - no API key');
+    return false;
+  }
+  
+  try {
+    console.log('🧪 Testing Gemini API connection...');
+    const response = await ai.models.generateContent({
+      model: "gemini-2.5-flash",
+      contents: "Say hello",
+    });
+    const text = response.text.trim();
+    console.log('✅ Gemini API test successful:', text);
+    return true;
+  } catch (error) {
+    console.error('❌ Gemini API test failed:', error);
+    return false;
+  }
+}
+
 // Helper to build a tree and then format it for the prompt
 const formatCategoryTreeForPrompt = (categories: ProductCategory[]): string => {
     if (!categories || categories.length === 0) return 'No categories available.';
@@ -76,6 +98,18 @@ export async function generateLandingPageStructure(
   localBusinessData?: any
 ): Promise<LandingPageData> {
   console.log('🚀 generateLandingPageStructure called with business data:', localBusinessData);
+  
+  // Check if AI is available
+  if (!ai) {
+    throw new Error('Gemini AI is not configured. Please add your API key to the environment variables.');
+  }
+  
+  // Test API connectivity first
+  try {
+    await testGeminiConnection();
+  } catch (error) {
+    throw new Error('Unable to connect to Gemini API. Please check your API key and internet connection.');
+  }
   
   const selectedSections = { ...LANDING_PAGE_SCHEMA.properties };
   

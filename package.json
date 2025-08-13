@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@google/genai": "^1.13.0",
+    "@heroicons/react": "^2.2.0",
     "@supabase/supabase-js": "^2.54.0",
     "chart.js": "^4.4.3",
     "file-saver": "^2.0.5",

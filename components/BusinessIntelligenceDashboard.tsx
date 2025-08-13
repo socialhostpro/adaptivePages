@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  TrendingUpIcon, 
+  ArrowTrendingUpIcon, 
   UsersIcon, 
   EyeIcon, 
-  MousePointerClickIcon,
+  CursorArrowRaysIcon,
   ChartBarIcon,
   PhotoIcon,
   GlobeAltIcon,
@@ -71,7 +71,7 @@ export const BusinessIntelligenceDashboard: React.FC<BusinessIntelligenceDashboa
 
   const tabs = [
     { id: 'overview', name: 'Overview', icon: ChartBarIcon },
-    { id: 'seo', name: 'SEO & Search', icon: TrendingUpIcon },
+    { id: 'seo', name: 'SEO & Search', icon: ArrowTrendingUpIcon },
     { id: 'analytics', name: 'Analytics', icon: EyeIcon },
     { id: 'ads', name: 'Advertising', icon: CurrencyDollarIcon },
     { id: 'social', name: 'Social Media', icon: ShareIcon },
@@ -215,7 +215,7 @@ const OverviewTab: React.FC<{ data: ComprehensiveBusinessData | null }> = ({ dat
     {
       name: 'Search Console Clicks',
       value: data.googleSearchConsole?.clicks?.toLocaleString() || 'N/A',
-      icon: MousePointerClickIcon,
+      icon: CursorArrowRaysIcon,
       color: 'text-blue-600'
     },
     {
