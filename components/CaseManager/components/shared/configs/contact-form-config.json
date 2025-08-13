@@ -1,0 +1,387 @@
+{
+  "id": "contact_form_feature",
+  "name": "Contact Form",
+  "version": "1.0.0",
+  "description": "Simple responsive contact form with AI enhancement",
+  "layout": {
+    "breakpoints": {
+      "mobile": 768,
+      "tablet": 1024,
+      "desktop": 1200
+    },
+    "layouts": {
+      "mobile": {
+        "type": "traditional",
+        "header": {
+          "fixed": true,
+          "height": "60px",
+          "showTitle": true,
+          "actions": ["back"]
+        },
+        "navigation": {
+          "type": "hamburger",
+          "position": "top",
+          "items": []
+        },
+        "content": {
+          "padding": "20px",
+          "scrollable": true,
+          "pullToRefresh": false
+        },
+        "gestures": {
+          "swipeNavigation": false,
+          "pullToRefresh": false,
+          "longPress": false
+        }
+      },
+      "tablet": {
+        "orientation": "auto",
+        "sidebar": {
+          "enabled": false,
+          "width": "0px",
+          "collapsible": false,
+          "position": "left"
+        },
+        "grid": {
+          "columns": 1,
+          "gap": "24px",
+          "responsive": true
+        },
+        "tables": {
+          "horizontalScroll": false,
+          "stickyHeaders": false,
+          "compactMode": false
+        }
+      },
+      "desktop": {
+        "layout": "standard",
+        "sidebar": {
+          "enabled": false,
+          "width": "0px",
+          "collapsible": false
+        },
+        "header": {
+          "height": "64px",
+          "sticky": false
+        },
+        "content": {
+          "maxWidth": "600px",
+          "centered": true
+        }
+      }
+    },
+    "features": []
+  },
+  "features": [
+    {
+      "id": "contact_form",
+      "name": "Contact Form",
+      "type": "page",
+      "route": "/contact",
+      "components": [
+        {
+          "id": "form_container",
+          "type": "Card",
+          "props": {
+            "title": "Get in Touch",
+            "className": "max-w-lg mx-auto"
+          },
+          "children": [
+            {
+              "id": "contact_intro",
+              "type": "Text",
+              "props": {
+                "variant": "body",
+                "className": "mb-6 text-center",
+                "children": "We'd love to hear from you. Send us a message and we'll respond as soon as possible."
+              }
+            },
+            {
+              "id": "contact_form_fields",
+              "type": "Grid",
+              "props": {
+                "cols": 1,
+                "gap": 4
+              },
+              "children": [
+                {
+                  "id": "name_input",
+                  "type": "Input",
+                  "props": {
+                    "label": "Full Name",
+                    "placeholder": "Enter your full name",
+                    "dataBinding": "contact.name",
+                    "required": true,
+                    "aiEnhancement": {
+                      "enabled": true,
+                      "types": ["proper_case"]
+                    }
+                  }
+                },
+                {
+                  "id": "email_input",
+                  "type": "Input",
+                  "props": {
+                    "label": "Email Address",
+                    "type": "email",
+                    "placeholder": "your.email@example.com",
+                    "dataBinding": "contact.email",
+                    "required": true
+                  }
+                },
+                {
+                  "id": "phone_input",
+                  "type": "Input",
+                  "props": {
+                    "label": "Phone Number",
+                    "type": "tel",
+                    "placeholder": "(555) 123-4567",
+                    "dataBinding": "contact.phone"
+                  }
+                },
+                {
+                  "id": "subject_input",
+                  "type": "Input",
+                  "props": {
+                    "label": "Subject",
+                    "placeholder": "What's this about?",
+                    "dataBinding": "contact.subject",
+                    "required": true,
+                    "aiEnhancement": {
+                      "enabled": true,
+                      "types": ["professional", "concise"]
+                    }
+                  }
+                },
+                {
+                  "id": "message_textarea",
+                  "type": "Textarea",
+                  "props": {
+                    "label": "Message",
+                    "placeholder": "Tell us more about your inquiry...",
+                    "dataBinding": "contact.message",
+                    "rows": 5,
+                    "required": true,
+                    "aiEnhancement": {
+                      "enabled": true,
+                      "types": ["professional", "grammar", "clarity"]
+                    },
+                    "voiceDictation": {
+                      "enabled": true
+                    }
+                  }
+                },
+                {
+                  "id": "contact_preferences",
+                  "type": "Grid",
+                  "props": {
+                    "cols": 2,
+                    "gap": 4,
+                    "className": "mt-4"
+                  },
+                  "layout": {
+                    "responsive": {
+                      "mobile": { "cols": 1 }
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "newsletter_checkbox",
+                      "type": "Checkbox",
+                      "props": {
+                        "label": "Subscribe to newsletter",
+                        "dataBinding": "contact.newsletter"
+                      }
+                    },
+                    {
+                      "id": "updates_checkbox",
+                      "type": "Checkbox",
+                      "props": {
+                        "label": "Get product updates",
+                        "dataBinding": "contact.updates"
+                      }
+                    }
+                  ]
+                },
+                {
+                  "id": "form_actions",
+                  "type": "Grid",
+                  "props": {
+                    "cols": 2,
+                    "gap": 4,
+                    "className": "mt-8"
+                  },
+                  "layout": {
+                    "responsive": {
+                      "mobile": { "cols": 1 }
+                    }
+                  },
+                  "children": [
+                    {
+                      "id": "clear_btn",
+                      "type": "Button",
+                      "props": {
+                        "variant": "ghost",
+                        "className": "w-full",
+                        "children": "Clear Form",
+                        "action": "clear_form"
+                      }
+                    },
+                    {
+                      "id": "submit_btn",
+                      "type": "Button",
+                      "props": {
+                        "variant": "primary",
+                        "className": "w-full",
+                        "children": "Send Message",
+                        "action": "submit_contact_form"
+                      }
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "contact_info",
+          "type": "Card",
+          "props": {
+            "title": "Other Ways to Reach Us",
+            "className": "max-w-lg mx-auto mt-8"
+          },
+          "children": [
+            {
+              "id": "contact_methods",
+              "type": "Grid",
+              "props": {
+                "cols": 1,
+                "gap": 4
+              },
+              "children": [
+                {
+                  "id": "email_info",
+                  "type": "Text",
+                  "props": {
+                    "variant": "body",
+                    "children": "📧 Email: support@company.com"
+                  }
+                },
+                {
+                  "id": "phone_info",
+                  "type": "Text",
+                  "props": {
+                    "variant": "body",
+                    "children": "📞 Phone: (555) 123-4567"
+                  }
+                },
+                {
+                  "id": "hours_info",
+                  "type": "Text",
+                  "props": {
+                    "variant": "body",
+                    "children": "🕒 Hours: Monday - Friday, 9AM - 6PM EST"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "layout": {
+        "mobile": "single_column",
+        "tablet": "single_column",
+        "desktop": "centered"
+      },
+      "enabled": true
+    }
+  ],
+  "permissions": [],
+  "workflows": [
+    {
+      "id": "contact_form_submission",
+      "name": "Contact Form Submission",
+      "trigger": {
+        "type": "user_action",
+        "event": "submit_contact_form"
+      },
+      "steps": [
+        {
+          "id": "validate_required_fields",
+          "type": "condition",
+          "config": {
+            "rules": [
+              { "field": "contact.name", "required": true },
+              { "field": "contact.email", "required": true },
+              { "field": "contact.subject", "required": true },
+              { "field": "contact.message", "required": true }
+            ]
+          },
+          "nextStep": "send_email",
+          "errorStep": "show_validation_error"
+        },
+        {
+          "id": "send_email",
+          "type": "api_call",
+          "config": {
+            "endpoint": "/api/contact/submit",
+            "method": "POST",
+            "data": "{{contact}}"
+          },
+          "nextStep": "show_success_message"
+        },
+        {
+          "id": "show_success_message",
+          "type": "notification",
+          "config": {
+            "type": "success",
+            "message": "Thank you! Your message has been sent successfully. We'll get back to you soon."
+          }
+        },
+        {
+          "id": "show_validation_error",
+          "type": "notification",
+          "config": {
+            "type": "error",
+            "message": "Please fill in all required fields."
+          }
+        }
+      ]
+    },
+    {
+      "id": "clear_form_workflow",
+      "name": "Clear Form",
+      "trigger": {
+        "type": "user_action",
+        "event": "clear_form"
+      },
+      "steps": [
+        {
+          "id": "reset_form_data",
+          "type": "action",
+          "config": {
+            "type": "reset_data",
+            "target": "contact"
+          }
+        }
+      ]
+    }
+  ],
+  "integrations": [
+    {
+      "id": "contact_api",
+      "name": "Contact API",
+      "type": "api",
+      "config": {
+        "baseUrl": "/api"
+      },
+      "endpoints": [
+        {
+          "id": "submit_contact",
+          "method": "POST",
+          "url": "/contact/submit"
+        }
+      ]
+    }
+  ]
+}

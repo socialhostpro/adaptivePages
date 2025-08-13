@@ -39,6 +39,8 @@ export default function App() {
       const isEditorHost = domain === 'pages.imaginecapital.ai';
       const isLocal = domain === 'localhost' || domain.endsWith('.app.localhost') || domain.endsWith('127.0.0.1');
       
+      console.log('App routing debug:', { path, hash, domain });
+      
       // Priority 1: Custom Domain Check
       if (!isLocal && !isEditorHost && path === '/') {
         try {
@@ -91,7 +93,7 @@ export default function App() {
 
   if (loading || view === 'loading') {
       return (
-          <div className="w-full h-screen flex flex-col items-center justify-center bg-white dark:bg-gray-900">
+          <div className="w-screen h-screen flex flex-col items-center justify-center bg-white dark:bg-gray-900 overflow-hidden">
               <LoaderIcon className="w-12 h-12 text-indigo-500" />
           </div>
       );
@@ -106,7 +108,7 @@ export default function App() {
   }
   
   if (view === 'editor' && session) {
-    return <Editor key={session.user.id} session={session} />;
+    return <Editor session={session} />;
   }
 
   return <Auth />;

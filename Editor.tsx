@@ -37,6 +37,7 @@ const LessonViewerModal = React.lazy(() => import('./components/LessonViewerModa
 const CustomerPortalModal = React.lazy(() => import('./components/CustomerPortalModal'));
 const QuizModal = React.lazy(() => import('./components/QuizModal'));
 const OnboardingWizardModal = React.lazy(() => import('./components/OnboardingWizardModal'));
+const Phase7DemoModal = React.lazy(() => import('./components/shared/Phase7DemoModal'));
 
 
 type ExportFile = {
@@ -100,6 +101,7 @@ const ModalLoader = () => (
 export default function Editor({ session }: EditorProps): React.ReactElement {
     const [activePage, setActivePage] = useState<ManagedPage | null>(null);
     const [isDashboardOpen, setDashboardOpen] = useState(true);
+    const [isPhase7DemoOpen, setIsPhase7DemoOpen] = useState(false);
     const [initialDashboardTab, setInitialDashboardTab] = useState<string | undefined>(undefined);
     
     const [prompt, setPrompt] = useState<string>(() => localStorage.getItem('ai-lp-generator-prompt') || DEFAULT_PROMPT);
@@ -428,16 +430,19 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
     }, [activePage]);
     
     useEffect(() => {
-        refreshAllData().then(({ pages }) => {
-            if (pages.length > 0) {
-                loadPage(pages[0]);
-            } else {
-                setDashboardOpen(true);
-            }
-        });
+        refreshAllData();
         const savedTheme = localStorage.getItem('themeMode') as 'light' | 'dark' || 'dark';
         setThemeMode(savedTheme);
     }, []);
+
+    // Separate effect to handle initial page loading when pages are loaded
+    useEffect(() => {
+        if (managedPages.length > 0 && !activePage) {
+            loadPage(managedPages[0]);
+        } else if (managedPages.length === 0 && !isPagesLoading && !activePage) {
+            setDashboardOpen(true);
+        }
+    }, [managedPages, activePage, isPagesLoading]);
     
     useEffect(() => {
         if (isInitialMount.current) {
@@ -895,7 +900,7 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
 
 
     return (
-        <div className={`w-full h-screen flex flex-col font-sans ${themeMode}`}>
+        <div className={`w-screen h-screen flex flex-col font-sans ${themeMode} overflow-hidden`}>
             <ControlPanel
                 prompt={prompt} setPrompt={setPrompt}
                 tone={tone} setTone={setTone}
@@ -913,6 +918,7 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
                 onShowSeoModal={() => setSeoModalOpen(true)}
                 onShowPublishModal={() => setPublishModalOpen(true)}
                 onShowAppSettingsModal={() => setAppSettingsModalOpen(true)}
+                onShowPhase7Demo={() => setIsPhase7DemoOpen(true)}
                 sectionOrder={sectionOrder}
                 setSectionOrder={setSectionOrder}
                 setHasUnsavedChanges={setHasUnsavedChanges}
@@ -933,7 +939,7 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
                     onClose={() => setAccountPopoverOpen(false)}
                 />
             )}
-            <main className="flex-grow w-full overflow-y-auto">
+            <main className="flex-grow w-full h-0 overflow-hidden">
                 <LandingPagePreview
                     pageId={activePage?.id}
                     data={landingPageData}
@@ -1162,6 +1168,14 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
                         onClose={() => setActiveWizard(null)}
                         wizard={activeWizard}
                         onSubmit={handleWizardSubmit}
+                    />
+                </Suspense>
+            )}
+            {isPhase7DemoOpen && (
+                <Suspense fallback={<ModalLoader />}>
+                    <Phase7DemoModal
+                        isOpen={isPhase7DemoOpen}
+                        onClose={() => setIsPhase7DemoOpen(false)}
                     />
                 </Suspense>
             )}

@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="https://rxkywcylrtoirshfqqpd.supabase.co/storage/v1/object/public/public//Teal%20and%20Lime%20Green%20Logo%20for%20ADAPTIVEPAGES%20(350%20x%20200%20px)%20(1).png" />
@@ -13,9 +13,31 @@
     <style>
       html {
         scroll-behavior: smooth;
+        margin: 0;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
       }
+      
+      body {
+        margin: 0;
+        padding: 0;
+        height: 100vh;
+        overflow: hidden;
+      }
+      
+      #root {
+        height: 100vh;
+        width: 100vw;
+        margin: 0;
+        padding: 0;
+        overflow: hidden;
+      }
+      
       /* Placeholder for Google Font styles */
-      #google-font-styles {}
+      #google-font-styles {
+        /* Dynamic font styles will be inserted here */
+      }
 
       .section-animate {
         opacity: 0;
@@ -114,6 +136,11 @@
   }
 }
 </script>
+  <script>
+    // Initialize theme from localStorage or default to dark
+    const theme = localStorage.getItem('themeMode') || 'dark';
+    document.documentElement.classList.add(theme);
+  </script>
 </head>
   <body>
     <div id="root"></div>

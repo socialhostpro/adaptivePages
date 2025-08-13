@@ -14,6 +14,7 @@ import GridIcon from './icons/GridIcon';
 import SeoIcon from './icons/SeoIcon';
 import GlobeIcon from './icons/GlobeIcon';
 import SettingsIcon from './icons/SettingsIcon';
+import StarIcon from './icons/StarIcon';
 import type { LandingPageData, ManagedPage } from '../types';
 import DragHandleIcon from './icons/DragHandleIcon';
 import ChevronDownIcon from './icons/ChevronDownIcon';
@@ -44,6 +45,7 @@ interface ControlPanelProps {
   onShowSeoModal: () => void;
   onShowPublishModal: () => void;
   onShowAppSettingsModal: () => void;
+  onShowPhase7Demo: () => void;
   sectionOrder: string[];
   setSectionOrder: (order: string[]) => void;
   setHasUnsavedChanges: (value: boolean) => void;
@@ -185,7 +187,7 @@ const SectionManager = ({ order, setOrder, isDisabled, onEditSection, setHasUnsa
 const ControlPanel: React.FC<ControlPanelProps> = ({
   prompt, setPrompt, tone, setTone, palette, setPalette, industry, setIndustry,
   isLoading, onGenerate, themeMode, setThemeMode, isGenerated, onSaveProgress, onExportPage, saveStatus, hasUnsavedChanges,
-  onShowDashboard, onShowSeoModal, onShowPublishModal, onShowAppSettingsModal, sectionOrder, setSectionOrder, setHasUnsavedChanges, pageData, onShowAccount,
+  onShowDashboard, onShowSeoModal, onShowPublishModal, onShowAppSettingsModal, onShowPhase7Demo, sectionOrder, setSectionOrder, setHasUnsavedChanges, pageData, onShowAccount,
   activePage, onLoadSettings, onEditSection, oldSiteUrl, setOldSiteUrl, inspirationUrl, setInspirationUrl
 }) => {
   const [isMinimized, setIsMinimized] = useState(false);
@@ -278,6 +280,9 @@ const ControlPanel: React.FC<ControlPanelProps> = ({
             <span className="text-lg font-bold text-gray-800 dark:text-slate-200 tracking-tight">AdaptivePages</span>
         </div>
         <div className="flex items-center gap-1">
+            <button onClick={onShowPhase7Demo} title="Phase 7 Professional Components Demo" className="p-1.5 rounded-full hover:bg-yellow-100 dark:hover:bg-yellow-900/30 bg-gradient-to-r from-yellow-100 to-orange-100 dark:from-yellow-900/20 dark:to-orange-900/20">
+                <StarIcon className="w-5 h-5 text-yellow-600 dark:text-yellow-400" />
+            </button>
             <button onClick={onShowAccount} aria-label="My Account" className="p-1.5 rounded-full hover:bg-gray-200/80 dark:hover:bg-slate-700/80">
                 <UserIcon className="w-5 h-5 text-gray-600 dark:text-slate-300" />
             </button>

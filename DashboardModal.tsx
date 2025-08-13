@@ -48,6 +48,7 @@ import SettingsManagement from './components/SettingsManagement';
 import GroupManagement from './components/GroupManagement';
 import PageAssignmentModal from './components/PageAssignmentModal';
 import OnboardingManagement from './components/OnboardingManagement';
+import CaseManager from './components/CaseManager';
 import RefreshIcon from './components/icons/RefreshIcon';
 import LoaderIcon from './components/icons/LoaderIcon';
 import AddEditTaskModal from './components/AddEditTaskModal';
@@ -307,6 +308,7 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
     {
         name: 'Business',
         items: [
+            { key: 'casemanager', label: 'Case Manager', icon: FileCheckIcon },
             { key: 'cart', label: 'Cart', icon: ShoppingCartIcon },
             { key: 'contacts', label: 'Contact Manager', icon: UsersIcon },
             { key: 'users', label: 'Users', icon: UsersGroupIcon },
@@ -487,6 +489,16 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
                         >
                             <RefreshIcon className="h-5 w-5" />
                         </button>
+                        <button
+                            onClick={() => window.open('/phase5-demo.html', '_blank')}
+                            className="flex items-center justify-center py-3 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-lg font-medium transition-colors"
+                            title="View Components Demo"
+                        >
+                            <svg className="h-5 w-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                            </svg>
+                            Demo
+                        </button>
                     </div>
                     {isLoadingPages ? (
                          <div 
@@ -569,6 +581,8 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
                     )}
                  </>
             );
+        case 'casemanager':
+            return <CaseManager isFullscreen={true} onBackToHome={() => setActiveTab('dashboard')} />;
         case 'cart':
             return <ShopManagement session={session} pages={pages} orders={orders} contacts={contacts} products={products} categories={categories} media={media} onUpdate={onRefresh} onSwitchMainTab={setActiveTab} {...commonTaskProps} />;
         case 'contacts':
@@ -643,6 +657,17 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
                     
                     {/* QUICK ACCESS FEATURE MENU */}
                     <div className="flex flex-wrap gap-2 mb-2">
+                        <button 
+                            onClick={() => setActiveTab('casemanager')}
+                            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                                activeTab === 'casemanager' 
+                                    ? 'bg-blue-600 text-white' 
+                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700'
+                            }`}
+                        >
+                            <FileCheckIcon className="w-4 h-4" />
+                            Case Manager
+                        </button>
                         <button 
                             onClick={() => setActiveTab('cart')}
                             className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${

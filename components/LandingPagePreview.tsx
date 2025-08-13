@@ -166,7 +166,7 @@ const LandingPagePreview: React.FC<LandingPagePreviewProps> = ({ pageId, data, i
   };
 
   return (
-    <div className={`bg-white dark:bg-gray-900 text-${theme.textColorName}-800 dark:text-${theme.textColorName}-200 transition-colors duration-500`}>
+    <div className={`w-full h-full overflow-y-auto bg-white dark:bg-gray-900 text-${theme.textColorName}-800 dark:text-${theme.textColorName}-200 transition-colors duration-500`}>
         <SectionWrapper sectionKey="nav" onEditSection={onEditSection}>
             <Navbar 
               nav={nav} 

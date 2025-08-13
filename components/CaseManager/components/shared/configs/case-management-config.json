@@ -1,0 +1,628 @@
+{
+  "id": "case_management_dashboard",
+  "name": "Case Management Dashboard",
+  "version": "1.0.0",
+  "description": "Complete case management system with mobile, tablet, and desktop optimized views",
+  "layout": {
+    "breakpoints": {
+      "mobile": 768,
+      "tablet": 1024,
+      "desktop": 1200
+    },
+    "layouts": {
+      "mobile": {
+        "type": "app",
+        "header": {
+          "fixed": true,
+          "height": "60px",
+          "showTitle": true,
+          "actions": ["search", "notifications", "menu"]
+        },
+        "navigation": {
+          "type": "bottom-tabs",
+          "position": "bottom",
+          "items": [
+            {
+              "id": "dashboard",
+              "label": "Dashboard",
+              "icon": "dashboard",
+              "route": "/dashboard"
+            },
+            {
+              "id": "cases",
+              "label": "Cases",
+              "icon": "cases",
+              "route": "/cases",
+              "badge": "{{stats.activeCases}}"
+            },
+            {
+              "id": "tasks",
+              "label": "Tasks",
+              "icon": "tasks", 
+              "route": "/tasks",
+              "badge": "{{stats.pendingTasks}}"
+            },
+            {
+              "id": "calendar",
+              "label": "Calendar",
+              "icon": "calendar",
+              "route": "/calendar"
+            },
+            {
+              "id": "profile",
+              "label": "Profile",
+              "icon": "profile",
+              "route": "/profile"
+            }
+          ]
+        },
+        "content": {
+          "padding": "16px",
+          "scrollable": true,
+          "pullToRefresh": true
+        },
+        "gestures": {
+          "swipeNavigation": true,
+          "pullToRefresh": true,
+          "longPress": true
+        }
+      },
+      "tablet": {
+        "orientation": "auto",
+        "sidebar": {
+          "enabled": true,
+          "width": "280px",
+          "collapsible": true,
+          "position": "left"
+        },
+        "grid": {
+          "columns": 2,
+          "gap": "24px",
+          "responsive": true
+        },
+        "tables": {
+          "horizontalScroll": true,
+          "stickyHeaders": true,
+          "compactMode": false
+        }
+      },
+      "desktop": {
+        "layout": "dashboard",
+        "sidebar": {
+          "enabled": true,
+          "width": "320px",
+          "collapsible": true
+        },
+        "header": {
+          "height": "64px",
+          "sticky": true
+        },
+        "content": {
+          "maxWidth": "1400px",
+          "centered": true
+        }
+      }
+    },
+    "features": []
+  },
+  "features": [
+    {
+      "id": "dashboard_overview",
+      "name": "Dashboard Overview",
+      "type": "page",
+      "route": "/dashboard",
+      "components": [
+        {
+          "id": "stats_grid",
+          "type": "Grid",
+          "props": {
+            "cols": 4,
+            "gap": 6,
+            "className": "mb-8"
+          },
+          "layout": {
+            "responsive": {
+              "mobile": { "cols": 2 },
+              "tablet": { "cols": 3 },
+              "desktop": { "cols": 4 }
+            }
+          },
+          "children": [
+            {
+              "id": "active_cases_card",
+              "type": "Card",
+              "props": {
+                "title": "Active Cases",
+                "className": "text-center"
+              },
+              "children": [
+                {
+                  "id": "active_cases_number",
+                  "type": "Text",
+                  "props": {
+                    "variant": "h1",
+                    "className": "text-blue-600 dark:text-blue-400",
+                    "children": "{{stats.activeCases}}"
+                  }
+                },
+                {
+                  "id": "active_cases_change",
+                  "type": "Text",
+                  "props": {
+                    "variant": "caption",
+                    "className": "text-green-600",
+                    "children": "+{{stats.activeCasesChange}} this week"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "pending_tasks_card",
+              "type": "Card",
+              "props": {
+                "title": "Pending Tasks",
+                "className": "text-center"
+              },
+              "children": [
+                {
+                  "id": "pending_tasks_number",
+                  "type": "Text",
+                  "props": {
+                    "variant": "h1",
+                    "className": "text-orange-600 dark:text-orange-400",
+                    "children": "{{stats.pendingTasks}}"
+                  }
+                },
+                {
+                  "id": "pending_tasks_change",
+                  "type": "Text",
+                  "props": {
+                    "variant": "caption",
+                    "className": "text-red-600",
+                    "children": "+{{stats.pendingTasksChange}} today"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "completed_today_card",
+              "type": "Card",
+              "props": {
+                "title": "Completed Today",
+                "className": "text-center"
+              },
+              "children": [
+                {
+                  "id": "completed_today_number",
+                  "type": "Text",
+                  "props": {
+                    "variant": "h1",
+                    "className": "text-green-600 dark:text-green-400",
+                    "children": "{{stats.completedToday}}"
+                  }
+                }
+              ]
+            },
+            {
+              "id": "team_efficiency_card",
+              "type": "Card",
+              "props": {
+                "title": "Team Efficiency",
+                "className": "text-center"
+              },
+              "children": [
+                {
+                  "id": "efficiency_percentage",
+                  "type": "Text",
+                  "props": {
+                    "variant": "h1",
+                    "className": "text-purple-600 dark:text-purple-400",
+                    "children": "{{stats.efficiency}}%"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "recent_activity",
+          "type": "Card",
+          "props": {
+            "title": "Recent Activity",
+            "className": "mb-8"
+          },
+          "children": [
+            {
+              "id": "activity_table",
+              "type": "Table",
+              "props": {
+                "headers": ["Time", "User", "Action", "Case"],
+                "data": "{{recentActivity}}"
+              }
+            }
+          ]
+        },
+        {
+          "id": "quick_actions",
+          "type": "Card",
+          "props": {
+            "title": "Quick Actions"
+          },
+          "children": [
+            {
+              "id": "actions_grid",
+              "type": "Grid",
+              "props": {
+                "cols": 3,
+                "gap": 4
+              },
+              "layout": {
+                "responsive": {
+                  "mobile": { "cols": 1 },
+                  "tablet": { "cols": 2 },
+                  "desktop": { "cols": 3 }
+                }
+              },
+              "children": [
+                {
+                  "id": "new_case_btn",
+                  "type": "Button",
+                  "props": {
+                    "variant": "primary",
+                    "className": "w-full",
+                    "children": "New Case",
+                    "action": "create_case"
+                  }
+                },
+                {
+                  "id": "new_task_btn",
+                  "type": "Button",
+                  "props": {
+                    "variant": "outline",
+                    "className": "w-full",
+                    "children": "New Task",
+                    "action": "create_task"
+                  }
+                },
+                {
+                  "id": "generate_report_btn",
+                  "type": "Button",
+                  "props": {
+                    "variant": "ghost",
+                    "className": "w-full",
+                    "children": "Generate Report",
+                    "action": "generate_report"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "layout": {
+        "mobile": "single_column",
+        "tablet": "two_column",
+        "desktop": "dashboard_grid"
+      },
+      "enabled": true
+    },
+    {
+      "id": "case_list",
+      "name": "Case List",
+      "type": "page",
+      "route": "/cases",
+      "components": [
+        {
+          "id": "case_filters",
+          "type": "Card",
+          "props": {
+            "title": "Filters",
+            "className": "mb-6"
+          },
+          "children": [
+            {
+              "id": "filter_grid",
+              "type": "Grid",
+              "props": {
+                "cols": 4,
+                "gap": 4
+              },
+              "layout": {
+                "responsive": {
+                  "mobile": { "cols": 1 },
+                  "tablet": { "cols": 2 },
+                  "desktop": { "cols": 4 }
+                }
+              },
+              "children": [
+                {
+                  "id": "status_filter",
+                  "type": "Select",
+                  "props": {
+                    "label": "Status",
+                    "placeholder": "All Statuses",
+                    "dataBinding": "filters.status",
+                    "options": [
+                      { "value": "", "label": "All Statuses" },
+                      { "value": "open", "label": "Open" },
+                      { "value": "in_progress", "label": "In Progress" },
+                      { "value": "closed", "label": "Closed" }
+                    ]
+                  }
+                },
+                {
+                  "id": "priority_filter",
+                  "type": "Select",
+                  "props": {
+                    "label": "Priority",
+                    "placeholder": "All Priorities",
+                    "dataBinding": "filters.priority",
+                    "options": [
+                      { "value": "", "label": "All Priorities" },
+                      { "value": "high", "label": "High" },
+                      { "value": "medium", "label": "Medium" },
+                      { "value": "low", "label": "Low" }
+                    ]
+                  }
+                },
+                {
+                  "id": "assignee_filter",
+                  "type": "Select",
+                  "props": {
+                    "label": "Assignee",
+                    "placeholder": "All Users",
+                    "dataBinding": "filters.assignee",
+                    "options": "{{users}}"
+                  }
+                },
+                {
+                  "id": "search_input",
+                  "type": "Input",
+                  "props": {
+                    "label": "Search",
+                    "placeholder": "Search cases...",
+                    "dataBinding": "filters.search"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "cases_table",
+          "type": "Card",
+          "props": {
+            "title": "Cases"
+          },
+          "children": [
+            {
+              "id": "cases_data_table",
+              "type": "Table",
+              "props": {
+                "headers": ["ID", "Title", "Status", "Priority", "Assignee", "Created", "Actions"],
+                "data": "{{filteredCases}}"
+              }
+            }
+          ]
+        }
+      ],
+      "layout": {
+        "mobile": "single_column",
+        "tablet": "single_column",
+        "desktop": "single_column"
+      },
+      "enabled": true
+    },
+    {
+      "id": "create_case_modal",
+      "name": "Create Case",
+      "type": "modal",
+      "components": [
+        {
+          "id": "create_case_form",
+          "type": "Grid",
+          "props": {
+            "cols": 1,
+            "gap": 4
+          },
+          "children": [
+            {
+              "id": "case_title",
+              "type": "Input",
+              "props": {
+                "label": "Case Title",
+                "placeholder": "Enter case title...",
+                "dataBinding": "newCase.title",
+                "required": true,
+                "aiEnhancement": {
+                  "enabled": true,
+                  "types": ["professional", "concise"]
+                }
+              }
+            },
+            {
+              "id": "case_description",
+              "type": "Textarea",
+              "props": {
+                "label": "Description",
+                "placeholder": "Describe the case...",
+                "dataBinding": "newCase.description",
+                "rows": 4,
+                "aiEnhancement": {
+                  "enabled": true,
+                  "types": ["professional", "detailed", "structure"]
+                },
+                "voiceDictation": {
+                  "enabled": true
+                }
+              }
+            },
+            {
+              "id": "case_priority",
+              "type": "Select",
+              "props": {
+                "label": "Priority",
+                "dataBinding": "newCase.priority",
+                "options": [
+                  { "value": "low", "label": "Low" },
+                  { "value": "medium", "label": "Medium" },
+                  { "value": "high", "label": "High" }
+                ]
+              }
+            },
+            {
+              "id": "case_assignee",
+              "type": "Select",
+              "props": {
+                "label": "Assignee",
+                "dataBinding": "newCase.assignee",
+                "options": "{{users}}"
+              }
+            },
+            {
+              "id": "case_urgent",
+              "type": "Checkbox",
+              "props": {
+                "label": "Mark as urgent",
+                "dataBinding": "newCase.urgent"
+              }
+            },
+            {
+              "id": "form_actions",
+              "type": "Grid",
+              "props": {
+                "cols": 2,
+                "gap": 4,
+                "className": "mt-6"
+              },
+              "children": [
+                {
+                  "id": "cancel_btn",
+                  "type": "Button",
+                  "props": {
+                    "variant": "ghost",
+                    "className": "w-full",
+                    "children": "Cancel",
+                    "action": "cancel_create_case"
+                  }
+                },
+                {
+                  "id": "create_btn",
+                  "type": "Button",
+                  "props": {
+                    "variant": "primary",
+                    "className": "w-full",
+                    "children": "Create Case",
+                    "action": "submit_create_case"
+                  }
+                }
+              ]
+            }
+          ]
+        }
+      ],
+      "layout": {
+        "mobile": "full_screen",
+        "tablet": "modal",
+        "desktop": "modal"
+      },
+      "enabled": true
+    }
+  ],
+  "globalStyles": [],
+  "globalScripts": [],
+  "permissions": [
+    {
+      "id": "case_read",
+      "name": "Read Cases",
+      "description": "Can view case information",
+      "actions": ["view_case", "list_cases"]
+    },
+    {
+      "id": "case_write",
+      "name": "Write Cases",
+      "description": "Can create and edit cases",
+      "actions": ["create_case", "edit_case", "update_case"]
+    },
+    {
+      "id": "case_delete",
+      "name": "Delete Cases",
+      "description": "Can delete cases",
+      "actions": ["delete_case"]
+    }
+  ],
+  "workflows": [
+    {
+      "id": "case_creation_workflow",
+      "name": "Case Creation Workflow",
+      "trigger": {
+        "type": "user_action",
+        "event": "submit_create_case"
+      },
+      "steps": [
+        {
+          "id": "validate_form",
+          "type": "condition",
+          "config": {
+            "rules": [
+              { "field": "newCase.title", "required": true },
+              { "field": "newCase.priority", "required": true }
+            ]
+          },
+          "nextStep": "save_case",
+          "errorStep": "show_validation_error"
+        },
+        {
+          "id": "save_case",
+          "type": "api_call",
+          "config": {
+            "endpoint": "/api/cases",
+            "method": "POST",
+            "data": "{{newCase}}"
+          },
+          "nextStep": "show_success"
+        },
+        {
+          "id": "show_success",
+          "type": "notification",
+          "config": {
+            "type": "success",
+            "message": "Case created successfully!"
+          }
+        }
+      ]
+    }
+  ],
+  "integrations": [
+    {
+      "id": "cases_api",
+      "name": "Cases API",
+      "type": "api",
+      "config": {
+        "baseUrl": "/api"
+      },
+      "endpoints": [
+        {
+          "id": "list_cases",
+          "method": "GET",
+          "url": "/cases"
+        },
+        {
+          "id": "create_case",
+          "method": "POST",
+          "url": "/cases"
+        },
+        {
+          "id": "update_case",
+          "method": "PUT",
+          "url": "/cases/{id}"
+        },
+        {
+          "id": "delete_case",
+          "method": "DELETE",
+          "url": "/cases/{id}"
+        }
+      ]
+    }
+  ]
+}
