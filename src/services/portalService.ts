@@ -1,8 +1,21 @@
 
 
-import { supabase } from './supabase';
+import { supabase } from '../../services/supabase';
 import type { Portal, PortalType } from '../types';
-import type { TablesInsert, TablesUpdate } from '../database.types';
+import type { Tables, TablesInsert, TablesUpdate } from '../types/database.types';
+
+// Type-safe converter to map database portal to application portal
+function convertDbPortalToPortal(dbPortal: Tables<'portals'>): Portal {
+    return {
+        id: dbPortal.id,
+        user_id: dbPortal.user_id,
+        created_at: dbPortal.created_at,
+        name: dbPortal.name,
+        type: dbPortal.type as PortalType,
+        page_id: dbPortal.page_id,
+        settings: dbPortal.settings,
+    };
+}
 
 export async function getPortals(userId: string): Promise<Portal[]> {
     const { data, error } = await supabase
@@ -15,7 +28,7 @@ export async function getPortals(userId: string): Promise<Portal[]> {
         console.error("Error fetching portals:", error);
         throw error;
     }
-    return (data as unknown as Portal[]) || [];
+    return data ? data.map(convertDbPortalToPortal) : [];
 }
 
 export async function createPortal(userId: string, name: string, type: PortalType, pageId: string | null): Promise<Portal> {
@@ -27,7 +40,7 @@ export async function createPortal(userId: string, name: string, type: PortalTyp
     };
     const { data, error } = await supabase
         .from('portals')
-        .insert(payload as any)
+        .insert(payload)
         .select()
         .single();
     
@@ -36,7 +49,7 @@ export async function createPortal(userId: string, name: string, type: PortalTyp
         throw error;
     }
     if (!data) throw new Error("Portal creation failed.");
-    return data as unknown as Portal;
+    return convertDbPortalToPortal(data);
 }
 
 export async function deletePortal(portalId: string): Promise<void> {

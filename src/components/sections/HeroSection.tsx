@@ -3,9 +3,10 @@
 import React, { useState, useEffect } from 'react';
 import type { HeroSectionData, LandingPageTheme, ImageStore, CrmForm, HeroSlide, HeroButton } from '../../types';
 import * as contactService from '../../services/contactService';
-import RefreshIcon from '../icons/RefreshIcon';
-import LoaderIcon from '../icons/LoaderIcon';
-import EmbedHandler from '../shared/EmbedHandler';
+// Icons from Heroicons
+import { ArrowPathIcon as RefreshIcon } from '@heroicons/react/24/outline';
+import { ArrowPathIcon as LoaderIcon } from '@heroicons/react/24/outline';
+import EmbedHandler from '../../../components/shared/EmbedHandler';
 
 interface HeroSectionProps {
   section: HeroSectionData;
@@ -191,14 +192,14 @@ const HeroSection: React.FC<HeroSectionProps> = ({ section, theme, images, onReg
     );
   };
   
-  const renderContent = (content: { title: string, subtitle: string }, textColorClass = 'text-white') => (
+  const renderContent = (content: { title?: string, subtitle?: string }, textColorClass = 'text-white') => (
      <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center ${textColorClass}`}>
         <h1 className="text-4xl md:text-6xl font-extrabold tracking-tighter drop-shadow-lg">
-          {content.title}
+          {content.title || 'Welcome'}
         </h1>
         <p
             className={`mt-4 max-w-2xl mx-auto text-lg md:text-xl ${textColorClass === 'text-white' ? 'text-gray-200' : 'text-gray-600 dark:text-gray-300'} drop-shadow-md`}
-            dangerouslySetInnerHTML={{ __html: content.subtitle.replace(/\n/g, '<br />') }}
+            dangerouslySetInnerHTML={{ __html: (content.subtitle || '').replace(/\n/g, '<br />') }}
         />
         {renderButtons()}
     </div>

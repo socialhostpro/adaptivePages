@@ -1,14 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import type { ManagedPage, ManagedProduct, CartItem, CourseSectionData, CourseChapter } from './src/types';
 import LoaderIcon from './components/icons/LoaderIcon';
 import LandingPagePreview from './components/LandingPagePreview';
-import CartModal from './components/CartModal';
-import CheckoutModal from './components/CheckoutModal';
-import BookingModal from './components/BookingModal';
-import LessonViewerModal from './components/LessonViewerModal';
-import CustomerPortalModal from './components/CustomerPortalModal';
 import * as productService from './services/productService';
-import QuizModal from './components/QuizModal';
+
+// Lazy-loaded modal components
+const CartModal = React.lazy(() => import('./components/CartModal'));
+const CheckoutModal = React.lazy(() => import('./components/CheckoutModal'));
+const BookingModal = React.lazy(() => import('./components/BookingModal'));
+const LessonViewerModal = React.lazy(() => import('./components/LessonViewerModal'));
+const CustomerPortalModal = React.lazy(() => import('./components/CustomerPortalModal'));
+const QuizModal = React.lazy(() => import('./components/QuizModal'));
 
 interface PublicPageViewerProps {
     isCustomDomain: boolean;
@@ -229,69 +231,81 @@ const PublicPageViewer: React.FC<PublicPageViewerProps> = ({ isCustomDomain, ini
             />
              {page.data && (
                 <>
-                    <CartModal
-                        isOpen={isCartOpen}
-                        onClose={() => setIsCartOpen(false)}
-                        cartItems={cartItems}
-                        theme={page.data.theme}
-                        onUpdateQuantity={handleUpdateCartQuantity}
-                        onRemoveItem={handleRemoveFromCart}
-                        onCheckout={handleCheckout}
-                        images={page.images || {}}
-                    />
-                    <CheckoutModal
-                        isOpen={isCheckoutOpen}
-                        onClose={() => setIsCheckoutOpen(false)}
-                        pageId={page.id}
-                        cartItems={cartItems}
-                        theme={page.data.theme}
-                        settings={page.data.cartSettings}
-                        onSuccess={handleCheckoutSuccess}
-                    />
-                    <BookingModal
-                        isOpen={isBookingModalOpen}
-                        onClose={() => setIsBookingModalOpen(false)}
-                        page={page}
-                        services={allProducts.filter(p => p.fulfillment_type === 'On-site Service')}
-                    />
+                    <Suspense fallback={<div />}>
+                        <CartModal
+                            isOpen={isCartOpen}
+                            onClose={() => setIsCartOpen(false)}
+                            cartItems={cartItems}
+                            theme={page.data.theme}
+                            onUpdateQuantity={handleUpdateCartQuantity}
+                            onRemoveItem={handleRemoveFromCart}
+                            onCheckout={handleCheckout}
+                            images={page.images || {}}
+                        />
+                    </Suspense>
+                    <Suspense fallback={<div />}>
+                        <CheckoutModal
+                            isOpen={isCheckoutOpen}
+                            onClose={() => setIsCheckoutOpen(false)}
+                            pageId={page.id}
+                            cartItems={cartItems}
+                            theme={page.data.theme}
+                            settings={page.data.cartSettings}
+                            onSuccess={handleCheckoutSuccess}
+                        />
+                    </Suspense>
+                    <Suspense fallback={<div />}>
+                        <BookingModal
+                            isOpen={isBookingModalOpen}
+                            onClose={() => setIsBookingModalOpen(false)}
+                            page={page}
+                            services={allProducts.filter(p => p.fulfillment_type === 'On-site Service')}
+                        />
+                    </Suspense>
                 </>
             )}
             {isCustomerPortalOpen && page.data && (
-                <CustomerPortalModal
-                    isOpen={isCustomerPortalOpen}
-                    onClose={() => setIsCustomerPortalOpen(false)}
-                    pageData={page.data}
-                    onGoToCourse={handleGoToCourse}
-                />
+                <Suspense fallback={<div />}>
+                    <CustomerPortalModal
+                        isOpen={isCustomerPortalOpen}
+                        onClose={() => setIsCustomerPortalOpen(false)}
+                        pageData={page.data}
+                        onGoToCourse={handleGoToCourse}
+                    />
+                </Suspense>
             )}
             {activeLesson !== null && page.data?.course && (
-                <LessonViewerModal
-                    course={page.data.course}
-                    theme={page.data.theme}
-                    images={page.images || {}}
-                    initialLessonIndex={activeLesson}
-                    progress={courseProgress}
-                    onClose={() => setActiveLesson(null)}
-                    onCompleteLesson={handleCompleteLesson}
-                    onNavigate={setActiveLesson}
-                    pageId={page.id}
-                    userId={page.userId}
-                />
+                <Suspense fallback={<div />}>
+                    <LessonViewerModal
+                        course={page.data.course}
+                        theme={page.data.theme}
+                        images={page.images || {}}
+                        initialLessonIndex={activeLesson}
+                        progress={courseProgress}
+                        onClose={() => setActiveLesson(null)}
+                        onCompleteLesson={handleCompleteLesson}
+                        onNavigate={setActiveLesson}
+                        pageId={page.id}
+                        userId={page.userId}
+                    />
+                </Suspense>
             )}
             {quizForChapter && page.data && (
-                <QuizModal
-                    isOpen={!!quizForChapter}
-                    onClose={() => setQuizForChapter(null)}
-                    chapter={quizForChapter}
-                    theme={page.data.theme}
-                    onQuizPassed={() => {
-                        setCourseProgress(prev => ({...prev, [quizForChapter.id]: 'completed'}));
-                        setQuizForChapter(null);
-                    }}
-                    progress={courseProgress}
-                    pageId={page.id}
-                    userId={page.userId}
-                />
+                <Suspense fallback={<div />}>
+                    <QuizModal
+                        isOpen={!!quizForChapter}
+                        onClose={() => setQuizForChapter(null)}
+                        chapter={quizForChapter}
+                        theme={page.data.theme}
+                        onQuizPassed={() => {
+                            setCourseProgress(prev => ({...prev, [quizForChapter.id]: 'completed'}));
+                            setQuizForChapter(null);
+                        }}
+                        progress={courseProgress}
+                        pageId={page.id}
+                        userId={page.userId}
+                    />
+                </Suspense>
             )}
         </div>
     );

@@ -23,6 +23,7 @@ import EmbedSection from './components/sections/EmbedSection';
 import LoaderIcon from './components/icons/LoaderIcon';
 import CustomFormSection from './components/sections/CustomFormSection';
 import { LessonViewerModal } from './components/LessonViewerModal';
+import { Button } from './components/CaseManager/components/shared/Button';
 
 
 interface EditModalProps {
@@ -205,8 +206,9 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
     };
     
     const TabButton = ({ tab, label }: { tab: 'edit' | 'preview', label: string }) => (
-        <button
-            type="button"
+        <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setActiveTab(tab)}
             className={`whitespace-nowrap pb-3 px-4 border-b-2 font-semibold text-sm transition-colors ${
                 activeTab === tab
@@ -215,7 +217,7 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
             }`}
         >
             {label}
-        </button>
+        </Button>
     );
 
     if (!editableData) {

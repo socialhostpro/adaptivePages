@@ -1,4 +1,4 @@
-import type { LocalBusinessData } from './GenerationWizard';
+import type { LocalBusinessData } from './GenerationWizard/types';
 
 // Mock SEO analysis and optimization service
 export interface SeoAnalysis {

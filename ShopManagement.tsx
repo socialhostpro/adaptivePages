@@ -14,6 +14,7 @@ import ComingSoon from './components/ComingSoon';
 import AddEditProductModal from './components/AddEditProductModal';
 import CategoryManagement from './components/CategoryManagement';
 import CartReports from './CartReports';
+import { Button } from './components/CaseManager/components/shared/Button';
 
 interface ShopManagementProps {
     pages: ManagedPage[];

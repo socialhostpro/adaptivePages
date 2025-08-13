@@ -11,7 +11,7 @@ import CTASection from './sections/CTASection';
 import VideoSection from './sections/VideoSection';
 import BookingSection from './sections/BookingSection';
 import ContactSection from './sections/ContactSection';
-import { regenerateSectionContent, generateImageForPrompt } from '../services/geminiService';
+import { regenerateSectionContent, generateAndUploadImage } from '../../services/geminiService';
 import SectionEditForm from './SectionEditForm';
 import Navbar from './Navbar';
 import XIcon from './icons/XIcon';
@@ -112,8 +112,7 @@ const EditModal: React.FC<EditModalProps> = ({ sectionKey, pageData, images, bas
         setError(null);
         
         try {
-            const newImageData = await generateImageForPrompt(prompt, aspectRatio);
-            const newImageUrl = `data:image/jpeg;base64,${newImageData}`;
+            const newImageUrl = await generateAndUploadImage(prompt, imageKey, userId, aspectRatio);
             
             // Update preview images for immediate visual feedback
             setPreviewImages(prev => ({

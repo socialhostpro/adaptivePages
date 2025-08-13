@@ -10,6 +10,7 @@ import * as orderService from '../services/orderService';
 import type { Session } from '@supabase/supabase-js';
 import LoaderIcon from './icons/LoaderIcon';
 import BookingSettingsView from './BookingSettingsView';
+import { Button } from '../components/shared';
 
 interface BookingManagementProps {
     session: Session;
@@ -93,17 +94,20 @@ const BookingManagement: React.FC<BookingManagementProps> = ({ session, pages, o
             <div className="flex-shrink-0 border-b border-slate-200 dark:border-slate-700 flex justify-between items-center">
                 <nav className="-mb-px flex space-x-6">
                     {tabs.map(tab => (
-                        <button
+                        <Button
                             key={tab.key}
                             onClick={() => setActiveTab(tab.key as any)}
-                             className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
+                            variant={activeTab === tab.key ? 'primary' : 'ghost'}
+                            styleVariant={activeTab === tab.key ? 'solid' : 'ghost'}
+                            size="sm"
+                            className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
                                 activeTab === tab.key
                                 ? 'border-indigo-500 text-indigo-600 dark:text-indigo-400'
                                 : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300 dark:text-slate-400 dark:hover:text-slate-200'
                             }`}
                         >
                             {tab.label}
-                        </button>
+                        </Button>
                     ))}
                 </nav>
                  <select

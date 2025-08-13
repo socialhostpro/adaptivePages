@@ -85,7 +85,9 @@ const InitialState = () => (
 const ErrorState = ({ message }: { message: string }) => (
     <div className="w-full h-screen flex items-center justify-center p-8 text-center bg-red-50 dark:bg-red-900/20">
         <div>
-            <svg xmlns="http://www.w3.org/2000/svg" className="mx-auto h-16 w-16 text-red-400" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"></path></svg>
+            <div className="mx-auto h-16 w-16 bg-red-400 text-white rounded-full flex items-center justify-center text-3xl font-bold">
+                !
+            </div>
             <h2 className="mt-6 text-2xl font-bold text-red-800 dark:text-red-300">An Error Occurred</h2>
             <p className="mt-2 text-md text-red-600 dark:text-red-300 bg-red-100 dark:bg-red-500/20 p-3 rounded-md">{message}</p>
         </div>

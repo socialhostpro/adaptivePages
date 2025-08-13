@@ -498,6 +498,42 @@ export async function generateImageForPrompt(prompt: string, aspectRatio: '16:9'
   }
 }
 
+/**
+ * Generate an image from a prompt and upload it to Supabase Storage.
+ * @param prompt - The image generation prompt
+ * @param imageKey - A unique key for the image (e.g., 'hero', 'logo', 'gallery_0')
+ * @param userId - The user ID for the storage path
+ * @param aspectRatio - The aspect ratio for the generated image
+ * @returns The public URL of the uploaded image
+ */
+export async function generateAndUploadImage(
+  prompt: string,
+  imageKey: string,
+  userId: string,
+  aspectRatio: '16:9' | '1:1' = '16:9'
+): Promise<string> {
+  if (!prompt || prompt.trim() === '') {
+    console.error("generateAndUploadImage called with an empty prompt.");
+    throw new Error("Cannot generate an image without a prompt. Please provide a description.");
+  }
+  
+  try {
+    // First generate the image (returns base64)
+    console.log(`🎨 Generating image for prompt: "${prompt.substring(0, 50)}..."`);
+    const base64Data = await generateImageForPrompt(prompt, aspectRatio);
+    
+    // Then upload to Supabase Storage and get URL
+    console.log(`📤 Uploading generated image to storage: ${imageKey}`);
+    const { uploadImageToSupabaseStorage } = await import('../src/services/storageService');
+    const imageUrl = await uploadImageToSupabaseStorage(userId, base64Data, imageKey, 'image/jpeg');
+    
+    console.log(`✅ Image generated and uploaded successfully: ${imageKey} -> ${imageUrl}`);
+    return imageUrl;
+  } catch (error) {
+    throw handleGeminiError(error, `image generation and upload for prompt "${prompt}"`);
+  }
+}
+
 export async function generateImageDescription(imageBytes: string): Promise<{ description: string; keywords: string[] }> {
   const imagePart = {
     inlineData: {

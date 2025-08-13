@@ -3,7 +3,11 @@ import EnhancedControlPanel from './EnhancedControlPanel';
 import FloatingActionButton from './FloatingActionButton';
 import { LocalBusinessData } from './GenerationWizard';
 
-export function SeoWizardDemo() {
+interface SeoWizardDemoProps {
+  onBackToDashboard?: () => void;
+}
+
+export function SeoWizardDemo({ onBackToDashboard }: SeoWizardDemoProps) {
   const [showWizard, setShowWizard] = useState(false);
   const [seoMode, setSeoMode] = useState(true);
   const [businessProfile, setBusinessProfile] = useState<LocalBusinessData | null>(null);
@@ -40,9 +44,20 @@ export function SeoWizardDemo() {
       <div className="max-w-6xl mx-auto">
         {/* Demo Header */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white mb-4">
-            SEO-First Page Generation Demo
-          </h1>
+          <div className="flex items-center justify-between mb-4">
+            {onBackToDashboard && (
+              <button
+                onClick={onBackToDashboard}
+                className="bg-gray-600 hover:bg-gray-700 text-white px-4 py-2 rounded-lg transition-colors"
+              >
+                ← Back to Dashboard
+              </button>
+            )}
+            <h1 className="text-3xl font-bold text-gray-900 dark:text-white flex-1">
+              SEO-First Page Generation Demo
+            </h1>
+            <div className="w-32"></div> {/* Spacer for centering */}
+          </div>
           <p className="text-gray-600 dark:text-gray-400 mb-6">
             Advanced wizard with local business optimization and SEO analysis
           </p>

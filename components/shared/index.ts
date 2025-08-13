@@ -59,6 +59,12 @@ export type {
   NavigationConfig 
 } from '../CaseManager/components/shared/types';
 
+// Branding Components
+export { default as Logo } from './Logo';
+
+// Utility Components  
+export { default as ErrorBoundary } from './ErrorBoundary';
+
 // Demo Components (for development)
 export { default as ButtonDemo } from '../CaseManager/components/shared/ButtonDemo';
 export { default as NavigationDemo } from '../CaseManager/components/shared/NavigationDemo';

@@ -1,7 +1,21 @@
-import { supabase } from './supabase';
+import { supabase } from '../../services/supabase';
 import type { MediaFile } from '../types';
 import { generateImageDescription } from './geminiService';
-import type { TablesInsert, TablesUpdate } from '../database.types';
+import type { Tables, TablesInsert, TablesUpdate } from '../types/database.types';
+
+// Type-safe converter to map database media file to application media file
+function convertDbMediaFileToMediaFile(dbFile: Tables<'media_files'>): MediaFile {
+    return {
+        id: dbFile.id,
+        user_id: dbFile.user_id,
+        created_at: dbFile.created_at,
+        file_path: dbFile.file_path,
+        url: dbFile.url,
+        name: dbFile.name,
+        description: dbFile.description,
+        keywords: dbFile.keywords,
+    };
+}
 
 const BUCKET_NAME = 'media_library';
 
@@ -103,6 +117,55 @@ export async function uploadBase64File(userId: string, base64Data: string, fileN
     await uploadAndAnalyzeFile(userId, file);
 }
 
+/**
+ * Upload a base64 image to Supabase Storage and return the public URL.
+ * This is optimized for AI-generated images and doesn't store metadata in the database.
+ * @param userId - The user ID for the storage path
+ * @param base64Data - The base64 image data (without data:image prefix)
+ * @param imageKey - A unique key for the image (e.g., 'hero', 'logo', 'gallery_0')
+ * @param mimeType - The MIME type of the image (default: 'image/jpeg')
+ * @returns The public URL of the uploaded image
+ */
+export async function uploadImageToSupabaseStorage(
+    userId: string, 
+    base64Data: string, 
+    imageKey: string, 
+    mimeType: string = 'image/jpeg'
+): Promise<string> {
+    // Create a file path with timestamp to avoid conflicts
+    const timestamp = Date.now();
+    const extension = mimeType.split('/')[1] || 'jpg';
+    const file_path = `generated-images/${userId}/${imageKey}-${timestamp}.${extension}`;
+    
+    // Convert base64 to file
+    const file = base64ToFile(base64Data, `${imageKey}.${extension}`, mimeType);
+    
+    // Upload to Supabase Storage
+    const { data: uploadData, error: uploadError } = await supabase.storage
+        .from(BUCKET_NAME)
+        .upload(file_path, file, {
+            cacheControl: '3600',
+            upsert: false,
+        });
+
+    if (uploadError) {
+        console.error("Error uploading generated image:", uploadError.message, uploadError);
+        throw uploadError;
+    }
+
+    // Get the public URL
+    const { data: { publicUrl } } = supabase.storage
+        .from(BUCKET_NAME)
+        .getPublicUrl(file_path);
+
+    if (!publicUrl) {
+        throw new Error("Could not get public URL for uploaded image.");
+    }
+    
+    console.log(`✅ Generated image uploaded successfully: ${imageKey} -> ${publicUrl}`);
+    return publicUrl;
+}
+
 export async function listFiles(userId: string): Promise<MediaFile[]> {
     const { data, error } = await supabase
         .from('media_files')
@@ -115,7 +178,7 @@ export async function listFiles(userId: string): Promise<MediaFile[]> {
         throw error;
     }
 
-    return (data as unknown as MediaFile[]) || [];
+    return data ? data.map(convertDbMediaFileToMediaFile) : [];
 }
 
 export async function deleteFile(file: MediaFile): Promise<void> {
@@ -161,5 +224,5 @@ export async function updateFileMetadata(fileId: string, updates: { description?
         throw new Error(`File with id ${fileId} not found.`);
     }
     
-    return data as unknown as MediaFile;
+    return convertDbMediaFileToMediaFile(data);
 }

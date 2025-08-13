@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from './services/supabase';
 import LoaderIcon from './components/icons/LoaderIcon';
+import { Button, Input } from './components/shared';
 
 const backgroundImages = [
     'https://rxkywcylrtoirshfqqpd.supabase.co/storage/v1/object/public/public//1.png', // Contractor
@@ -130,7 +131,7 @@ export default function Auth() {
                             Email address
                             </label>
                             <div className="mt-1">
-                            <input
+                            <Input
                                 id="email"
                                 name="email"
                                 type="email"
@@ -148,7 +149,7 @@ export default function Auth() {
                                 Password
                             </label>
                             <div className="mt-1">
-                                <input
+                                <Input
                                     id="password"
                                     name="password"
                                     type="password"
@@ -166,13 +167,15 @@ export default function Auth() {
                         {message && <p className="text-sm text-green-400 bg-green-500/20 p-3 rounded-md">{message}</p>}
 
                         <div>
-                            <button
+                            <Button
                                 type="submit"
                                 disabled={loading}
-                                className="w-full flex items-center justify-center py-2.5 px-4 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:bg-indigo-400"
+                                variant="primary"
+                                size="lg"
+                                className="w-full"
                             >
                                 {loading ? <LoaderIcon className="h-5 w-5" /> : (authMode === 'login' ? 'Sign in' : 'Sign up')}
-                            </button>
+                            </Button>
                         </div>
                     </form>
                 </div>

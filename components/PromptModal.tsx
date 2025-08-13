@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import XIcon from './icons/XIcon';
+import { Button, Input } from '../components/shared';
 
 interface PromptModalProps {
     isOpen: boolean;
@@ -55,7 +56,7 @@ const PromptModal: React.FC<PromptModalProps> = ({ isOpen, onClose, onSubmit, ti
                             <label htmlFor="prompt-input" className="block text-sm font-semibold text-gray-700 dark:text-slate-300 mb-2">
                                 {inputLabel}
                             </label>
-                            <input
+                            <Input
                                 ref={inputRef}
                                 id="prompt-input"
                                 type="text"
@@ -66,12 +67,21 @@ const PromptModal: React.FC<PromptModalProps> = ({ isOpen, onClose, onSubmit, ti
                         </div>
                     </div>
                     <div className="px-6 py-4 bg-gray-50 dark:bg-slate-800/50 rounded-b-2xl flex justify-end items-center gap-3">
-                        <button type="button" onClick={onClose} className="py-2 px-4 border border-gray-300 dark:border-slate-600 rounded-md shadow-sm text-sm font-medium text-gray-700 dark:text-slate-200 bg-white dark:bg-slate-700 hover:bg-gray-50 dark:hover:bg-slate-600">
+                        <Button 
+                            type="button" 
+                            onClick={onClose} 
+                            variant="secondary"
+                            size="sm"
+                        >
                             Cancel
-                        </button>
-                        <button type="submit" className="py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700">
+                        </Button>
+                        <Button 
+                            type="submit" 
+                            variant="primary"
+                            size="sm"
+                        >
                             {submitText}
-                        </button>
+                        </Button>
                     </div>
                 </form>
             </div>

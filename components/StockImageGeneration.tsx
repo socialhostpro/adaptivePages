@@ -1,8 +1,7 @@
 
 import React, { useState } from 'react';
 import type { Session } from '@supabase/supabase-js';
-import { generateImageForPrompt, enhanceTextWithAI } from '../services/geminiService';
-import { uploadBase64File } from '../services/storageService';
+import { generateAndUploadImage, enhanceTextWithAI } from '../services/geminiService';
 import LoaderIcon from './icons/LoaderIcon';
 import SparklesIcon from './icons/SparklesIcon';
 import SaveIcon from './icons/SaveIcon';
@@ -24,8 +23,8 @@ const StockImageGeneration: React.FC<StockImageGenerationProps> = ({ session }) 
         setError(null);
         setGeneratedImage(null);
         try {
-            const imageBytes = await generateImageForPrompt(prompt, '1:1');
-            setGeneratedImage(imageBytes);
+            const imageUrl = await generateAndUploadImage(prompt, 'stock-image', session.user.id, '1:1');
+            setGeneratedImage(imageUrl);
         } catch (e) {
             setError('Failed to generate image. Please try again.');
             console.error(e);
@@ -48,13 +47,12 @@ const StockImageGeneration: React.FC<StockImageGenerationProps> = ({ session }) 
         if (!generatedImage) return;
         setIsSaving(true);
         try {
-            const fileName = `${prompt.substring(0, 30).replace(/\s/g, '_')}_${Date.now()}.jpg`;
-            await uploadBase64File(session.user.id, generatedImage, fileName, 'image/jpeg');
-            alert("Image saved to your Stock Gallery!");
+            // Image is already saved to Supabase Storage with the URL: generatedImage
+            alert("Image generated and saved successfully!");
             setGeneratedImage(null);
             setPrompt('');
         } catch (e) {
-             setError('Failed to save image.');
+             setError('Failed to process image.');
             console.error(e);
         } finally {
             setIsSaving(false);
@@ -96,7 +94,7 @@ const StockImageGeneration: React.FC<StockImageGenerationProps> = ({ session }) 
             {generatedImage && (
                 <div className="bg-white dark:bg-slate-800 p-6 rounded-xl shadow-md text-center">
                     <h3 className="text-lg font-bold mb-4">Generated Image</h3>
-                    <img src={`data:image/jpeg;base64,${generatedImage}`} alt={prompt} className="max-w-sm w-full mx-auto rounded-lg shadow-lg"/>
+                    <img src={generatedImage} alt={prompt} className="max-w-sm w-full mx-auto rounded-lg shadow-lg"/>
                      <button onClick={handleSave} disabled={isSaving} className="mt-6 flex items-center justify-center mx-auto gap-2 py-2 px-6 rounded-md font-semibold text-white bg-green-600 hover:bg-green-700 disabled:bg-green-400">
                         {isSaving ? <LoaderIcon className="w-5 h-5" /> : <><SaveIcon className="w-5 h-5"/> Save to Stock Gallery</>}
                     </button>

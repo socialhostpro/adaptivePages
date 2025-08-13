@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import type { Session, User } from '@supabase/supabase-js';
-import type { ManagedPage, ManagedOrder, CrmContact, PageGroup, ProductCategory, ManagedProduct, MediaFile, TeamMember, OnboardingWizard, CrmForm, Task, ProofingRequest, ManagedBooking, SeoReport, StripeSettings } from './src/types';
+import type { ManagedPage, ManagedOrder, CrmContact, PageGroup, ProductCategory, ManagedProduct, MediaFile, TeamMember, OnboardingWizard, CrmForm, Task, ProofingRequest, ManagedBooking, SeoReport, StripeSettings } from './types';
 import * as pageService from './services/pageService';
 import * as taskService from './services/taskService';
 import SparklesIcon from './components/icons/SparklesIcon';
@@ -13,6 +13,7 @@ import CheckCircleIcon from './components/icons/CheckCircleIcon';
 import GridIcon from './components/icons/GridIcon';
 import ShoppingCartIcon from './components/icons/ShoppingCartIcon';
 import ShopManagement from './components/ShopManagement';
+import { Button, IconButton } from './components/shared';
 import ComingSoon from './components/ComingSoon';
 import MenuIcon from './components/icons/MenuIcon';
 import CalendarDaysIcon from './components/icons/CalendarDaysIcon';
@@ -121,6 +122,7 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
   const [deletingPageId, setDeletingPageId] = useState<string | null>(null);
   const [managingPage, setManagingPage] = useState<ManagedPage | null>(null);
   const [isMobileNavOpen, setMobileNavOpen] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [refreshingThumbnailId, setRefreshingThumbnailId] = useState<string | null>(null);
 
   // Task Management State - LIFTED UP
@@ -185,16 +187,11 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
     }, [pages]);
 
   const handleCreateNew = () => {
-    setPromptConfig({
-      title: "Create New Page",
-      inputLabel: "Page Name",
-      initialValue: "My New Landing Page",
-      submitText: "Create",
-      onConfirm: (name) => {
-        onCreateNewPage(name);
-      }
-    });
-    setPromptOpen(true);
+    console.log('📝 DashboardModal: handleCreateNew called - calling onCreateNewPage');
+    // Close the dashboard modal and go directly to wizard
+    onClose();
+    // Call the wizard directly without prompting for name
+    onCreateNewPage("New Landing Page");
   };
 
   const handleRename = (page: ManagedPage) => {
@@ -392,17 +389,26 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
   };
   const activeItem = getActiveItem();
   
-  const NavContent = ({ onLinkClick = () => {} }) => (
+  const NavContent = ({ onLinkClick = () => {}, isSidebarCollapsed = false }) => (
      <>
-        <div className="px-2 mb-6 flex-shrink-0">
-            <span className="text-2xl font-bold text-gray-800 dark:text-slate-200 tracking-tight">AdaptivePages</span>
-        </div>
+        {!isSidebarCollapsed && (
+            <div className="px-2 mb-6 flex-shrink-0">
+                <span className="text-2xl font-bold text-gray-800 dark:text-slate-200 tracking-tight">AdaptivePages</span>
+            </div>
+        )}
+        {isSidebarCollapsed && (
+            <div className="px-2 mb-6 flex-shrink-0 text-center">
+                <span className="text-2xl font-bold text-gray-800 dark:text-slate-200 tracking-tight">A</span>
+            </div>
+        )}
         <div className="flex-grow overflow-y-auto -mr-4 pr-4">
             <ul className="space-y-4">
               {navSections.map(section => (
                 <li key={section.name}>
-                  <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{section.name}</h3>
-                  <ul className="space-y-1">
+                  {!isSidebarCollapsed && (
+                      <h3 className="px-3 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">{section.name}</h3>
+                  )}
+                  <ul className={isSidebarCollapsed ? "space-y-2" : "space-y-1"}>
                     {section.items.map(item => {
                         const Icon = item.icon;
                         const isParentActive = activeTab.startsWith(item.key);
@@ -412,19 +418,26 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
                             <li key={item.key}>
                                 <button
                                     onClick={() => handleNavClick(item.key, 'children' in item, onLinkClick)}
-                                    className={`w-full flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
+                                    className={`w-full flex items-center ${isSidebarCollapsed ? 'justify-center' : 'justify-between'} gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold transition-colors ${
                                         isParentActive && !('children' in item)
                                         ? 'bg-indigo-100 dark:bg-indigo-500/20 text-indigo-700 dark:text-indigo-300' 
                                         : 'text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50'
                                     }`}
+                                    title={isSidebarCollapsed ? item.label : undefined}
                                 >
-                                    <div className="flex items-center gap-3">
+                                    {isSidebarCollapsed ? (
                                         <Icon className="w-5 h-5" />
-                                        <span>{item.label}</span>
-                                    </div>
-                                    {'children' in item && <ChevronDownIcon className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />}
+                                    ) : (
+                                        <>
+                                            <div className="flex items-center gap-3">
+                                                <Icon className="w-5 h-5" />
+                                                <span>{item.label}</span>
+                                            </div>
+                                            {'children' in item && <ChevronDownIcon className={`w-4 h-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />}
+                                        </>
+                                    )}
                                 </button>
-                                {isExpanded && 'children' in item && item.children && (
+                                {!isSidebarCollapsed && isExpanded && 'children' in item && item.children && (
                                     <ul className="pl-6 mt-1 space-y-1">
                                         {item.children.map(child => (
                                             <li key={child.key}>
@@ -448,14 +461,27 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
               ))}
             </ul>
         </div>
-        <div className="pt-4 flex-shrink-0">
-             <button
-                onClick={onClose}
-                className="w-full text-left font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 p-3 rounded-lg text-sm"
-             >
-                Back to Editor
-            </button>
-        </div>
+        {!isSidebarCollapsed && (
+            <div className="pt-4 flex-shrink-0">
+                 <button
+                    onClick={onClose}
+                    className="w-full text-left font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 p-3 rounded-lg text-sm"
+                 >
+                    Back to Editor
+                </button>
+            </div>
+        )}
+        {isSidebarCollapsed && (
+            <div className="pt-4 flex-shrink-0 text-center">
+                 <button
+                    onClick={onClose}
+                    className="w-full flex justify-center font-semibold text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700/50 p-3 rounded-lg text-sm"
+                    title="Back to Editor"
+                 >
+                    ←
+                </button>
+            </div>
+        )}
     </>
   );
 
@@ -475,13 +501,16 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
             return (
                 <>
                     <div className="mb-6 flex gap-4">
-                        <button
+                        <Button
                             onClick={handleCreateNew}
-                            className="flex-1 flex items-center justify-center py-3 px-5 border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-lg text-base font-medium text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 hover:border-indigo-400 dark:hover:border-indigo-500 transition-all"
+                            variant="secondary"
+                            styleVariant="outline"
+                            size="lg"
+                            className="flex-1 border-dashed border-2"
                         >
                             <SparklesIcon className="mr-2 h-5 w-5" />
                             Create New Page
-                        </button>
+                        </Button>
                         <button
                             onClick={onRefresh}
                             className="flex items-center justify-center py-3 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
@@ -560,16 +589,21 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
                                             </button>
                                           </div>
                                           <div className="flex items-center gap-2">
-                                            <button 
+                                            <Button 
                                               onClick={() => setDeletingPageId(page.id)} 
-                                              className="flex items-center gap-1 py-1.5 px-3 rounded-md font-semibold text-white bg-red-500 hover:bg-red-600 transition-colors"
+                                              variant="danger"
+                                              size="sm"
                                               title="Delete Page"
                                             >
                                               <TrashIcon className="w-4 h-4" />
-                                            </button>
-                                            <button onClick={() => onSelectPage(page.id)} className="flex items-center gap-1 py-1.5 px-3 rounded-md font-semibold text-white bg-indigo-500 hover:bg-indigo-600 transition-colors">
+                                            </Button>
+                                            <Button 
+                                              onClick={() => onSelectPage(page.id)} 
+                                              variant="primary"
+                                              size="sm"
+                                            >
                                               <EditIcon className="w-4 h-4" /> Open
-                                            </button>
+                                            </Button>
                                           </div>
                                         </div>
                                       </div>
@@ -637,8 +671,8 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
         
         <div className="w-full h-full flex overflow-hidden">
             {/* Sidebar Navigation for Desktop */}
-            <nav className="w-64 bg-white dark:bg-slate-800/50 p-4 border-r border-slate-200 dark:border-slate-800 flex-col hidden md:flex">
-                <NavContent />
+            <nav className={`${isSidebarCollapsed ? 'w-16' : 'w-64'} bg-white dark:bg-slate-800/50 p-4 border-r border-slate-200 dark:border-slate-800 flex-col hidden md:flex transition-all duration-300`}>
+                <NavContent isSidebarCollapsed={isSidebarCollapsed} />
             </nav>
             
             {/* Main Content */}
@@ -646,9 +680,24 @@ const DashboardModal: React.FC<DashboardModalProps> = (props) => {
                 <header className="flex-shrink-0 p-4 sm:p-6 border-b border-slate-200 dark:border-slate-800">
                     <div className="flex justify-between items-center mb-4">
                         <div className="flex items-center gap-3">
-                            <button className="p-2 -ml-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700" onClick={() => setMobileNavOpen(true)}>
+                            {/* Mobile menu button */}
+                            <button 
+                                className="p-2 -ml-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 md:hidden" 
+                                onClick={() => setMobileNavOpen(true)}
+                                title="Open mobile menu"
+                            >
                                 <MenuIcon className="w-6 h-6" />
                             </button>
+                            
+                            {/* Desktop sidebar toggle */}
+                            <button 
+                                className="p-2 -ml-2 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 hidden md:block" 
+                                onClick={() => setIsSidebarCollapsed(!isSidebarCollapsed)}
+                                title={isSidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+                            >
+                                <MenuIcon className="w-6 h-6" />
+                            </button>
+                            
                             <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white">
                                  {activeItem && 'parentLabel' in activeItem && activeItem.parentLabel ? `${activeItem.parentLabel} / ${activeItem.label}` : activeItem?.label}
                             </h1>

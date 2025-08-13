@@ -1,8 +1,20 @@
 
 
-import { supabase } from './supabase';
+import { supabase } from '../../services/supabase';
 import type { TeamMember, TeamRole } from '../types';
-import type { TablesInsert, TablesUpdate, PublicEnumTeamRole } from '../database.types';
+import type { Tables, TablesInsert, TablesUpdate, PublicEnumTeamRole } from '../types/database.types';
+
+// Type-safe converter to map database role to application role
+function convertDbTeamMemberToTeamMember(dbMember: Tables<'team_members'>): TeamMember {
+    return {
+        id: dbMember.id,
+        user_id: dbMember.user_id,
+        created_at: dbMember.created_at,
+        name: dbMember.name,
+        email: dbMember.email,
+        role: dbMember.role as TeamRole, // Safe cast since enum values are identical
+    };
+}
 
 export async function getTeamMembers(userId: string): Promise<TeamMember[]> {
     const { data, error } = await supabase
@@ -15,17 +27,20 @@ export async function getTeamMembers(userId: string): Promise<TeamMember[]> {
         console.error("Error fetching team members:", error);
         throw error;
     }
-    return (data as unknown as TeamMember[]) || [];
+    return data ? data.map(convertDbTeamMemberToTeamMember) : [];
 }
 
 export async function createTeamMember(userId: string, memberData: Omit<TeamMember, 'id' | 'user_id' | 'created_at'>): Promise<TeamMember> {
     const payload: TablesInsert<'team_members'> = {
         user_id: userId,
-        ...memberData,
+        name: memberData.name,
+        email: memberData.email,
+        role: memberData.role as PublicEnumTeamRole, // Safe cast since enum values are identical
     };
+    
     const { data, error } = await supabase
         .from('team_members')
-        .insert(payload as any)
+        .insert(payload)
         .select()
         .single();
     
@@ -34,13 +49,19 @@ export async function createTeamMember(userId: string, memberData: Omit<TeamMemb
         throw error;
     }
     if (!data) throw new Error("Team member creation failed.");
-    return data as unknown as TeamMember;
+    return convertDbTeamMemberToTeamMember(data);
 }
 
 export async function updateTeamMember(memberId: string, updates: Partial<Omit<TeamMember, 'id' | 'user_id' | 'created_at'>>): Promise<TeamMember> {
+    const payload: TablesUpdate<'team_members'> = {};
+    
+    if (updates.name !== undefined) payload.name = updates.name;
+    if (updates.email !== undefined) payload.email = updates.email;
+    if (updates.role !== undefined) payload.role = updates.role as PublicEnumTeamRole;
+    
     const { error, data } = await supabase
         .from('team_members')
-        .update(updates as any)
+        .update(payload)
         .eq('id', memberId)
         .select()
         .single();
@@ -50,7 +71,7 @@ export async function updateTeamMember(memberId: string, updates: Partial<Omit<T
         throw error;
     }
     if (!data) throw new Error("Team member update failed.");
-    return data as unknown as TeamMember;
+    return convertDbTeamMemberToTeamMember(data);
 }
 
 export async function deleteTeamMember(memberId: string): Promise<void> {

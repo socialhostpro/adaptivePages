@@ -8,6 +8,17 @@ type PageRow = Tables<'pages'>;
 type PageInsert = TablesInsert<'pages'>;
 type PageUpdate = TablesUpdate<'pages'>;
 
+// Type-safe conversion helpers
+const toJsonSafe = <T>(value: T | null | undefined): Json | null => {
+    if (value === null || value === undefined) return null;
+    return value as unknown as Json;
+};
+
+const fromJsonSafe = <T>(value: Json | null): T | null => {
+    if (value === null) return null;
+    return value as unknown as T;
+};
+
 const PAGE_COLUMNS = `
     id, user_id, name, updated_at, thumbnail_url, data, images, is_published, slug, custom_domain, 
     generation_config, published_data, published_images, group_id, owner_contact_id, 
@@ -117,7 +128,7 @@ export async function getPageList(userId: string): Promise<{ id: string, name: s
       console.error('Error fetching page list:', error.message);
       throw error;
     }
-    return (data as any) || [];
+    return data || [];
 }
 
 export async function getPage(id: string): Promise<ManagedPage | null> {
@@ -144,13 +155,13 @@ export async function savePage(pageToSave: ManagedPage): Promise<ManagedPage> {
     const payload: PageUpdate = {
         name: pageToSave.name,
         updated_at: new Date().toISOString(),
-        data: Object.keys(restOfData).length > 0 ? restOfData as unknown as Json : null,
-        images: pageToSave.images as unknown as Json,
+        data: Object.keys(restOfData).length > 0 ? toJsonSafe(restOfData) : null,
+        images: toJsonSafe(pageToSave.images),
         thumbnail_url: pageToSave.thumbnailUrl ?? null,
-        cart_settings: pageToSave.data?.cartSettings as unknown as Json ?? null,
-        booking_settings: pageToSave.data?.bookingSettings as unknown as Json ?? null,
-        stripe_settings: pageToSave.data?.stripeSettings as unknown as Json ?? null,
-        generation_config: pageToSave.generationConfig as unknown as Json ?? null,
+        cart_settings: toJsonSafe(pageToSave.data?.cartSettings),
+        booking_settings: toJsonSafe(pageToSave.data?.bookingSettings),
+        stripe_settings: toJsonSafe(pageToSave.data?.stripeSettings),
+        generation_config: toJsonSafe(pageToSave.generationConfig),
         head_scripts: headScripts ?? null,
         body_scripts: bodyScripts ?? null,
         staff_portal_enabled: staffPortalEnabled ?? null,
@@ -158,7 +169,7 @@ export async function savePage(pageToSave: ManagedPage): Promise<ManagedPage> {
     
     const { data, error } = await supabase
         .from('pages')
-        .update(payload as any)
+        .update(payload)
         .eq('id', pageToSave.id)
         .select(PAGE_COLUMNS)
         .single();
@@ -193,13 +204,13 @@ export async function createPage(name: string, userId: string): Promise<ManagedP
         name,
         slug: newSlug,
         data: null,
-        images: {} as Json,
+        images: toJsonSafe({}),
         generation_config: null,
     };
 
     const { data, error } = await supabase
         .from('pages')
-        .insert([newPage] as any)
+        .insert([newPage])
         .select(PAGE_COLUMNS)
         .single();
 
@@ -227,14 +238,10 @@ export async function deletePage(id: string): Promise<void> {
   }
 }
 
-export async function removeProductIdFromPages(productId: string): Promise<void> {
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) throw new Error("User not authenticated");
-
+export async function removePagesForProductId(productId: number): Promise<void> {
     const { data: pages, error: fetchError } = await supabase
         .from('pages')
-        .select('id, data')
-        .eq('user_id', user.id);
+        .select('id, data');
 
     if (fetchError) {
         console.error("Error fetching pages to remove product ID:", fetchError);
@@ -243,35 +250,37 @@ export async function removeProductIdFromPages(productId: string): Promise<void>
 
     if (!pages) return;
 
-    const pagesToUpdate = (pages as any).filter((page: any) =>
-        page.data && (page.data as unknown as LandingPageData)?.products?.itemIds?.includes(productId)
+    const pagesToUpdate = pages.filter((page: PageRow) =>
+        page.data && fromJsonSafe<LandingPageData>(page.data)?.products?.itemIds?.includes(productId.toString())
     );
 
     if (pagesToUpdate.length === 0) {
         return; // No pages to update
     }
 
-    const updates = pagesToUpdate.map((page: any) => {
-        const pageData = page.data as unknown as LandingPageData;
-        const newItemIds = pageData.products!.itemIds.filter(id => id !== productId);
+    const updates = pagesToUpdate.map((page: PageRow) => {
+        const pageData = fromJsonSafe<LandingPageData>(page.data);
+        if (!pageData?.products) return null;
+        
+        const newItemIds = pageData.products.itemIds.filter(id => id !== productId.toString());
         
         const newPageData: LandingPageData = {
             ...pageData,
             products: {
-                ...pageData.products!,
+                ...pageData.products,
                 itemIds: newItemIds,
             }
         };
         
         const updatePayload: PageUpdate = {
-            data: newPageData as unknown as Json,
+            data: toJsonSafe(newPageData),
         };
 
         return supabase
             .from('pages')
-            .update(updatePayload as any)
+            .update(updatePayload)
             .eq('id', page.id);
-    });
+    }).filter(Boolean);
 
     const results = await Promise.all(updates);
     const updateErrors = results.map(res => res.error).filter(Boolean);
@@ -287,7 +296,7 @@ export async function renamePage(id: string, newName: string): Promise<ManagedPa
   const payload: PageUpdate = { name: newName, updated_at: new Date().toISOString() };
   const { data, error } = await supabase
     .from('pages')
-    .update(payload as any)
+    .update(payload)
     .eq('id', id)
     .select(PAGE_COLUMNS)
     .single();
@@ -313,7 +322,7 @@ export async function updatePageAssignments(pageId: string, assignments: { group
     };
     const { data, error } = await supabase
         .from('pages')
-        .update(payload as any)
+        .update(payload)
         .eq('id', pageId)
         .select(PAGE_COLUMNS)
         .single();
@@ -338,8 +347,8 @@ export async function publishPage(pageId: string, pageData: LandingPageData, ima
     const { headScripts, bodyScripts, staffPortalEnabled, ...restOfData } = pageData;
     const payload: PageUpdate = {
       is_published: true,
-      published_data: restOfData as unknown as Json,
-      published_images: images as unknown as Json,
+      published_data: toJsonSafe(restOfData),
+      published_images: toJsonSafe(images),
       updated_at: new Date().toISOString(),
       head_scripts: headScripts ?? null,
       body_scripts: bodyScripts ?? null,
@@ -347,7 +356,7 @@ export async function publishPage(pageId: string, pageData: LandingPageData, ima
     };
     const { error } = await supabase
         .from('pages')
-        .update(payload as any)
+        .update(payload)
         .eq('id', pageId);
     if (error) throw error;
 }
@@ -356,7 +365,7 @@ export async function unpublishPage(pageId: string): Promise<void> {
     const payload: PageUpdate = { is_published: false, updated_at: new Date().toISOString() };
     const { error } = await supabase
         .from('pages')
-        .update(payload as any)
+        .update(payload)
         .eq('id', pageId);
     if (error) throw error;
 }
@@ -365,7 +374,7 @@ export async function updatePublishSettings(pageId: string, slug: string, custom
     const payload: PageUpdate = { slug, custom_domain: customDomain || null, updated_at: new Date().toISOString() };
     const { error } = await supabase
         .from('pages')
-        .update(payload as any)
+        .update(payload)
         .eq('id', pageId);
     if (error) throw error;
 }
@@ -376,7 +385,7 @@ export async function updateAppSettings(pageId: string, cartSettings: CartSettin
         throw new Error(`Page with ID ${pageId} not found to update app settings.`);
     }
 
-    const currentData = ((page as any).data as unknown as LandingPageData) || {};
+    const currentData = fromJsonSafe<LandingPageData>(page.data) || {};
     
     // Create the new data object for the JSONB column, preserving existing data
     const updatedData: Partial<LandingPageData> = {
@@ -391,10 +400,10 @@ export async function updateAppSettings(pageId: string, cartSettings: CartSettin
     delete updatedData.bodyScripts;
 
     const payload: PageUpdate = {
-        data: updatedData as unknown as Json, // Persist settings in the main JSONB for consistency
-        cart_settings: cartSettings as unknown as Json,
-        booking_settings: bookingSettings as unknown as Json,
-        stripe_settings: stripeSettings as unknown as Json,
+        data: toJsonSafe(updatedData), // Persist settings in the main JSONB for consistency
+        cart_settings: toJsonSafe(cartSettings),
+        booking_settings: toJsonSafe(bookingSettings),
+        stripe_settings: toJsonSafe(stripeSettings),
         head_scripts: headScripts,
         body_scripts: bodyScripts,
         updated_at: new Date().toISOString()
@@ -402,7 +411,7 @@ export async function updateAppSettings(pageId: string, cartSettings: CartSettin
     
     const { error } = await supabase
         .from('pages')
-        .update(payload as any)
+        .update(payload)
         .eq('id', pageId);
     if (error) throw error;
 }
@@ -448,7 +457,7 @@ export async function updatePageThumbnail(pageId: string, thumbnailUrl: string):
   
   const { error } = await supabase
     .from('pages')
-    .update(payload as any)
+    .update(payload)
     .eq('id', pageId);
     
   if (error) {

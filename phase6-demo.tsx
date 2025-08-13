@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { ToastProvider } from '@/components/shared/FeedbackStatus';
-import { UserInteractionDemo } from '@/components/shared/UserInteractionDemo';
+import UserInteractionDemo from '@/components/shared/UserInteractionDemo';
 import '@/src/index.css';
 
 const App = () => (

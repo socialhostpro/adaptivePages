@@ -1,20 +1,25 @@
 
-import React, { useState, useEffect } from 'react';
-import type { Session, AuthSubscription as Subscription } from '@supabase/supabase-js';
+import React, { useState, useEffect, Suspense } from 'react';
+import type { Session, Subscription } from '@supabase/supabase-js';
 import { supabase } from './services/supabase';
 import Auth from './Auth';
-import Editor from './Editor';
+import MainDashboard from './MainDashboard';
 import LoaderIcon from './components/icons/LoaderIcon';
-import PublicPageViewer from './PublicPageViewer';
 import { getPublicPageByDomain, getPublicPageBySlug } from './services/pageService';
 import type { ManagedPage } from './types';
 
+// Lazy load PublicPageViewer
+const PublicPageViewer = React.lazy(() => import('./PublicPageViewer'));
+
 export default function App() {
+  console.log('🏁 App component starting...');
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
   const [view, setView] = useState<'loading' | 'auth' | 'editor' | 'public'>('loading');
   const [publicPageData, setPublicPageData] = useState<ManagedPage | null>(null);
   const [isCustomDomain, setIsCustomDomain] = useState(false);
+  
+  console.log('🔍 App state:', { loading, view, session: !!session });
   
   useEffect(() => {
     let authListener: Subscription | null = null;
@@ -92,6 +97,7 @@ export default function App() {
   }, []);
 
   if (loading || view === 'loading') {
+      console.log('📋 Rendering loading screen...');
       return (
           <div className="w-screen h-screen flex flex-col items-center justify-center bg-white dark:bg-gray-900 overflow-hidden">
               <LoaderIcon className="w-12 h-12 text-indigo-500" />
@@ -100,16 +106,28 @@ export default function App() {
   }
 
   if (view === 'public') {
-      return <PublicPageViewer isCustomDomain={isCustomDomain} initialPageData={publicPageData} />;
+      console.log('🌐 Rendering public page viewer...');
+      return (
+        <Suspense fallback={
+          <div className="w-screen h-screen flex items-center justify-center bg-white dark:bg-gray-900">
+            <LoaderIcon className="w-8 h-8 text-indigo-500" />
+          </div>
+        }>
+          <PublicPageViewer isCustomDomain={isCustomDomain} initialPageData={publicPageData} />
+        </Suspense>
+      );
   }
 
   if (view === 'auth') {
+    console.log('🔐 Rendering auth component...');
     return <Auth />;
   }
   
   if (view === 'editor' && session) {
-    return <Editor session={session} />;
+    console.log('✏️ Rendering main dashboard...');
+    return <MainDashboard session={session} />;
   }
 
+  console.log('🔄 Fallback: Rendering auth component...');
   return <Auth />;
 }

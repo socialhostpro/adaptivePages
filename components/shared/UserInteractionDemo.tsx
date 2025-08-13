@@ -335,3 +335,4 @@ const UserInteractionDemo: React.FC = () => {
 };
 
 export default UserInteractionDemo;
+export { UserInteractionDemo };

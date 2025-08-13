@@ -1,14 +1,17 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
-import type { ManagedProduct, ProductStatus, FulfillmentType, ProductCategory, ProductOption, MediaFile, Task } from '../types';
+import type { ManagedProduct, ProductStatus, FulfillmentType, ProductCategory, ProductOption, MediaFile, Task } from './types';
 import XIcon from './components/icons/XIcon';
 import PlusIcon from './components/icons/PlusIcon';
 import TrashIcon from './components/icons/TrashIcon';
-import ImageInput from './ImageInput';
-import ImageGalleryInput from './ImageGalleryInput';
-import MediaLibraryModal from './MediaLibraryModal';
+import ImageInput from './components/ImageInput';
+import ImageGalleryInput from './components/ImageGalleryInput';
+import MediaLibraryModal from './components/MediaLibraryModal';
 import LoaderIcon from './components/icons/LoaderIcon';
-import AssociatedTasks from './AssociatedTasks';
+import AssociatedTasks from './components/AssociatedTasks';
+import { Button } from './components/CaseManager/components/shared/Button';
+import { Input } from './components/CaseManager/components/shared/Input';
+import { Select } from './components/CaseManager/components/shared/Select';
 
 interface AddEditProductModalProps {
     isOpen: boolean;
@@ -202,8 +205,9 @@ const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
     if (!isOpen || !product) return null;
 
     const TabButton = ({ tabName, label }: { tabName: string, label: string }) => (
-        <button
-            type="button"
+        <Button
+            variant="ghost"
+            size="sm"
             onClick={() => setActiveTab(tabName)}
             className={`whitespace-nowrap pb-3 px-4 border-b-2 font-medium text-sm ${
                 activeTab === tabName
@@ -212,7 +216,7 @@ const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
             }`}
         >
             {label}
-        </button>
+        </Button>
     );
 
     return (
@@ -223,9 +227,15 @@ const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                         <h2 className="text-xl font-bold text-gray-800 dark:text-slate-200">
                             {productToEdit ? 'Edit Item' : `Add New ${newItemType ? newItemType.charAt(0).toUpperCase() + newItemType.slice(1) : 'Item'}`}
                         </h2>
-                        <button onClick={onClose} className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700">
+                        <Button
+                            variant="ghost" 
+                            size="sm"
+                            onClick={onClose} 
+                            className="p-2 rounded-full text-gray-500 hover:bg-gray-100 dark:text-slate-400 dark:hover:bg-slate-700"
+                            aria-label="Close modal"
+                        >
                             <XIcon className="w-6 h-6" />
-                        </button>
+                        </Button>
                     </header>
                     <form onSubmit={handleSubmit}>
                         <div className="border-b border-gray-200 dark:border-slate-700 flex-shrink-0">
@@ -240,18 +250,45 @@ const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                         <main className="p-6 overflow-y-auto space-y-4 h-[55vh]">
                             {activeTab === 'general' && (
                                 <div className="space-y-4">
-                                    <FormField label="Name"><input required value={product.name} onChange={e => handleChange('name', e.target.value)} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" /></FormField>
-                                    <FormField label="Description"><textarea value={product.description || ''} onChange={e => handleChange('description', e.target.value)} rows={3} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" /></FormField>
+                                    <FormField label="Name">
+                                        <Input 
+                                            required 
+                                            value={product.name || ''} 
+                                            onChange={(e) => handleChange('name', e.target.value)} 
+                                            placeholder="Enter product name"
+                                        />
+                                    </FormField>
+                                    <FormField label="Description">
+                                        <Input 
+                                            as="textarea"
+                                            value={product.description || ''} 
+                                            onChange={(e) => handleChange('description', e.target.value)} 
+                                            rows={3}
+                                            placeholder="Enter product description"
+                                        />
+                                    </FormField>
                                     <div className="grid grid-cols-2 gap-4">
-                                        <FormField label="Price"><input required type="number" step="0.01" value={product.price || 0} onChange={e => handlePriceChange(e.target.value)} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600" /></FormField>
+                                        <FormField label="Price">
+                                            <Input 
+                                                required 
+                                                type="number" 
+                                                step="0.01" 
+                                                value={product.price || 0} 
+                                                onChange={(e) => handlePriceChange(e.target.value)} 
+                                                placeholder="0.00"
+                                            />
+                                        </FormField>
                                         <FormField label="Category">
                                             <CategorySelector categories={categories} value={product.category_id || null} onChange={e => handleChange('category_id', e.target.value)} />
                                         </FormField>
                                     </div>
                                     <FormField label="Status">
-                                        <select value={product.status} onChange={e => handleChange('status', e.target.value as ProductStatus)} className="w-full p-2 border rounded dark:bg-slate-700 dark:border-slate-600">
+                                        <Select 
+                                            value={product.status || 'Draft'} 
+                                            onChange={(e) => handleChange('status', e.target.value as ProductStatus)}
+                                        >
                                             {PRODUCT_STATUSES.map(s => <option key={s} value={s}>{s}</option>)}
-                                        </select>
+                                        </Select>
                                     </FormField>
                                 </div>
                             )}
@@ -267,7 +304,14 @@ const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                                         <div key={optIndex} className="p-4 border rounded-lg dark:border-slate-600 space-y-3">
                                             <div className="flex justify-between items-center">
                                                 <input value={option.name} onChange={e => handleOptionChange(optIndex, 'name', e.target.value)} placeholder="Option Name (e.g., Size)" className="font-semibold p-1 border-b dark:border-slate-500 bg-transparent focus:outline-none focus:border-indigo-500" />
-                                                <button type="button" onClick={() => removeOption(optIndex)}><TrashIcon className="w-5 h-5 text-red-500 hover:text-red-700" /></button>
+                                                <Button
+                                                    variant="ghost"
+                                                    size="sm"
+                                                    onClick={() => removeOption(optIndex)}
+                                                    aria-label={`Remove ${option.name} option`}
+                                                >
+                                                    <TrashIcon className="w-5 h-5 text-red-500 hover:text-red-700" />
+                                                </Button>
                                             </div>
                                             <div className="space-y-2">
                                                 {option.values.map((val, valIndex) => (
@@ -277,14 +321,35 @@ const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                                                             <span className="absolute left-2 top-1/2 -translate-y-1/2 text-slate-400">$</span>
                                                             <input type="number" step="0.01" value={val.priceModifier} onChange={e => handleOptionValueChange(optIndex, valIndex, 'priceModifier', parseFloat(e.target.value))} placeholder="+/- Price" className="w-32 pl-5 p-2 border rounded dark:bg-slate-700 dark:border-slate-500 text-sm" />
                                                         </div>
-                                                        <button type="button" onClick={() => removeOptionValue(optIndex, valIndex)}><TrashIcon className="w-4 h-4 text-red-500" /></button>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => removeOptionValue(optIndex, valIndex)}
+                                                            aria-label={`Remove ${val.value} value`}
+                                                        >
+                                                            <TrashIcon className="w-4 h-4 text-red-500" />
+                                                        </Button>
                                                     </div>
                                                 ))}
                                             </div>
-                                            <button type="button" onClick={() => addOptionValue(optIndex)} className="text-sm text-indigo-500 hover:underline">+ Add Value</button>
+                                            <Button 
+                                                variant="ghost" 
+                                                size="sm"
+                                                onClick={() => addOptionValue(optIndex)} 
+                                                className="text-sm text-indigo-500 hover:underline"
+                                            >
+                                                + Add Value
+                                            </Button>
                                         </div>
                                     ))}
-                                    <button type="button" onClick={addOption} className="w-full py-2 border-2 border-dashed rounded-lg dark:border-slate-600 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-700/50">+ Add Option (e.g., Color, Size)</button>
+                                    <Button 
+                                        variant="secondary" 
+                                        styleVariant="outline"
+                                        onClick={addOption} 
+                                        className="w-full py-2 border-2 border-dashed rounded-lg dark:border-slate-600 text-indigo-500 hover:bg-indigo-50 dark:hover:bg-slate-700/50"
+                                    >
+                                        + Add Option (e.g., Color, Size)
+                                    </Button>
                                 </div>
                             )}
                             {activeTab === 'tasks' && productToEdit && onOpenTaskModal && (
@@ -298,10 +363,21 @@ const AddEditProductModal: React.FC<AddEditProductModalProps> = ({
                             )}
                         </main>
                         <footer className="p-4 bg-gray-50 dark:bg-slate-800/50 border-t dark:border-slate-700 flex-shrink-0 flex justify-end gap-3">
-                            <button type="button" onClick={onClose} className="py-2 px-4 rounded-md font-semibold text-sm bg-white dark:bg-slate-700 border dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-600">Cancel</button>
-                            <button type="submit" disabled={isSaving} className="py-2 px-4 rounded-md font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-700 disabled:bg-indigo-400 flex items-center justify-center w-24">
+                            <Button 
+                                variant="secondary" 
+                                onClick={onClose} 
+                                className="py-2 px-4"
+                            >
+                                Cancel
+                            </Button>
+                            <Button 
+                                type="submit" 
+                                variant="primary"
+                                disabled={isSaving} 
+                                className="py-2 px-4 flex items-center justify-center w-24"
+                            >
                                {isSaving ? <LoaderIcon className="w-5 h-5" /> : 'Save'}
-                            </button>
+                            </Button>
                         </footer>
                     </form>
                 </div>
