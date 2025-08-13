@@ -4,6 +4,8 @@ import { supabase } from './services/supabase';
 import type { LandingPageData, ImageStore, ManagedPage, HeroSectionData, TestimonialsSectionData, SEOData, NavSectionData, ManagedProduct, CartItem, GallerySectionData, GeneratedProductsSectionData, CartSettings, BookingSettings, StripeSettings, CourseSectionData, MediaFile, GenerationConfig, ProductCategory, ProductItem, CourseLesson, CourseChapter, CrmForm, HeroSlide, ManagedOrder, CrmContact, PageGroup, TeamMember, OnboardingWizard, ProofingRequest, ManagedBooking, SeoReport } from './types';
 import { generateLandingPageStructure, generateImageForPrompt, generateNewSection } from './services/geminiService';
 import ControlPanel from './components/ControlPanel';
+import EnhancedControlPanel from './components/EnhancedControlPanel';
+import type { LocalBusinessData } from './components/GenerationWizard';
 import LandingPagePreview from './components/LandingPagePreview';
 import { TONES, PALETTES, SECTIONS, DEFAULT_PROMPT, INDUSTRIES } from './constants';
 import { prepareExportPackage } from './services/exportService';
@@ -136,6 +138,16 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
     const [isAppSettingsModalOpen, setAppSettingsModalOpen] = useState(false);
     const [isCustomerPortalOpen, setIsCustomerPortalOpen] = useState(false);
     const [isAccountPopoverOpen, setAccountPopoverOpen] = useState(false);
+    
+    // Business data from wizard
+    const [localBusinessData, setLocalBusinessData] = useState<LocalBusinessData | null>(null);
+    
+    // Debug business data changes
+    useEffect(() => {
+        if (localBusinessData) {
+            console.log('🏢 Business data updated in Editor:', localBusinessData);
+        }
+    }, [localBusinessData]);
     
     // TEMPORARILY DISABLE CACHE - USE DIRECT LOADING
     const [managedPages, setManagedPages] = useState<ManagedPage[]>([]);
@@ -515,10 +527,22 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
     useEffect(() => { localStorage.setItem('ai-lp-generator-sectionOrder', JSON.stringify(sectionOrder)); }, [sectionOrder]);
 
 
-    const handleGenerate = useCallback(async () => {
-        if (!activePage) {
-            alert("Please select or create a page first from 'My Pages'.");
-            return;
+    const handleGenerate = useCallback(async (skipPageCheck = false) => {
+        // If no active page, create a new one automatically
+        if (!activePage && !skipPageCheck) {
+            try {
+                const pageName = `New Page - ${new Date().toLocaleDateString()}`;
+                const newPage = await pageService.createPage(pageName, session.user.id);
+                setActivePage(newPage);
+                
+                // Continue with generation using the new page
+                await handleGenerate(true);
+                return;
+            } catch (error) {
+                console.error('Failed to create new page:', error);
+                alert("Failed to create a new page. Please try again.");
+                return;
+            }
         }
 
         if (sectionOrder.includes('products') && productCategories.length === 0) {
@@ -538,7 +562,7 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
         setHasUnsavedChanges(true); // A full generation is an unsaved change until saved.
 
         try {
-            const data = await generateLandingPageStructure(prompt, tone, palette, sectionOrder, industry, userMediaFiles, productCategories, managedProducts, undefined, oldSiteUrl, inspirationUrl);
+            const data = await generateLandingPageStructure(prompt, tone, palette, sectionOrder, industry, userMediaFiles, productCategories, managedProducts, undefined, oldSiteUrl, inspirationUrl, localBusinessData);
             
             let finalData: LandingPageData = { ...data, products: undefined };
 
@@ -580,6 +604,7 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
             }
             
             setLandingPageData(finalData);
+            console.log('🎯 Setting landingPageData in Editor:', finalData);
             if (finalData.sectionOrder) setSectionOrder(finalData.sectionOrder);
             
             setIsLoading('Processing images...');
@@ -645,6 +670,7 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
             }
             
             // Do not save here, just set the dirty flag
+            console.log('✅ Generation complete! landingPageData set to:', finalData);
             
         } catch (e) {
             const err = e as Error;
@@ -654,6 +680,21 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
             setIsLoading(false);
         }
     }, [prompt, tone, palette, sectionOrder, industry, activePage, userMediaFiles, productCategories, managedProducts, session.user.id, oldSiteUrl, inspirationUrl, refreshAllData]);
+
+    const handleStartOver = useCallback(() => {
+        // Clear all generated data and return to wizard
+        setLandingPageData(null);
+        setImages({});
+        setError(null);
+        setEditingSectionKey(null);
+        setLocalBusinessData(null);
+        setHasUnsavedChanges(false);
+        
+        // Clear wizard data from localStorage
+        localStorage.removeItem('generationWizard');
+        
+        console.log('🔄 Starting over - returning to wizard');
+    }, []);
 
     const handleOpenEditModal = (sectionKey: string) => { if (!isLoading) setEditingSectionKey(sectionKey); };
     const handleCloseEditModal = () => setEditingSectionKey(null);
@@ -901,14 +942,26 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
 
     return (
         <div className={`w-screen h-screen flex flex-col font-sans ${themeMode} overflow-hidden`}>
-            <ControlPanel
-                prompt={prompt} setPrompt={setPrompt}
-                tone={tone} setTone={setTone}
-                palette={palette} setPalette={setPalette}
-                industry={industry} setIndustry={setIndustry}
-                isLoading={!!isLoading}
-                onGenerate={handleGenerate}
-                themeMode={themeMode} setThemeMode={setThemeMode}
+            <EnhancedControlPanel
+                prompt={prompt}
+                setPrompt={setPrompt}
+                tone={tone}
+                setTone={setTone}
+                palette={palette}
+                setPalette={setPalette}
+                industry={industry}
+                setIndustry={setIndustry}
+                oldSiteUrl={oldSiteUrl}
+                setOldSiteUrl={setOldSiteUrl}
+                inspirationUrl={inspirationUrl}
+                setInspirationUrl={setInspirationUrl}
+                isLoading={isLoading}
+                onGenerate={() => {
+                    console.log('🚀 Starting generation from wizard...');
+                    return handleGenerate();
+                }}
+                themeMode={themeMode}
+                setThemeMode={setThemeMode}
                 isGenerated={!!landingPageData}
                 onSaveProgress={handleSaveProgress}
                 onExportPage={handleExportPage}
@@ -923,14 +976,14 @@ export default function Editor({ session }: EditorProps): React.ReactElement {
                 setSectionOrder={setSectionOrder}
                 setHasUnsavedChanges={setHasUnsavedChanges}
                 pageData={landingPageData}
-                onShowAccount={() => setAccountPopoverOpen(!isAccountPopoverOpen)}
+                onShowAccount={() => setAccountPopoverOpen(true)}
                 activePage={activePage}
-                onLoadSettings={loadSettingsFromPage}
+                onLoadSettings={loadPage}
                 onEditSection={handleOpenEditModal}
-                oldSiteUrl={oldSiteUrl}
-                setOldSiteUrl={setOldSiteUrl}
-                inspirationUrl={inspirationUrl}
-                setInspirationUrl={setInspirationUrl}
+                enableSeoMode={true}
+                localBusinessData={localBusinessData}
+                onLocalBusinessDataChange={setLocalBusinessData}
+                onStartOver={handleStartOver}
             />
              {isAccountPopoverOpen && (
                 <AccountPopover

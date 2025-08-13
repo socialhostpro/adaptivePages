@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Comprehensive Business Intelligence Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 1200px; margin: 0 auto; padding: 20px; }
+        .test-section { margin: 20px 0; padding: 20px; border: 1px solid #ddd; border-radius: 8px; }
+        .test-button { background: #007bff; color: white; border: none; padding: 10px 20px; margin: 5px; border-radius: 4px; cursor: pointer; }
+        .test-button:hover { background: #0056b3; }
+        .results { margin-top: 15px; padding: 15px; background: #f8f9fa; border-radius: 4px; }
+        .loading { color: #007bff; font-weight: bold; }
+        .error { color: #dc3545; }
+        .success { color: #28a745; }
+        pre { background: #f1f1f1; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        .metric-card { display: inline-block; margin: 10px; padding: 15px; background: white; border: 1px solid #ddd; border-radius: 8px; min-width: 200px; }
+        .metric-title { font-size: 14px; color: #666; margin-bottom: 5px; }
+        .metric-value { font-size: 24px; font-weight: bold; color: #333; }
+    </style>
+</head>
+<body>
+    <h1>🚀 Comprehensive Business Intelligence Test Suite</h1>
+    <p>Test all the new Google APIs and social media integrations we've built!</p>
+
+    <!-- Test Business Intelligence APIs -->
+    <div class="test-section">
+        <h2>📊 Business Intelligence APIs</h2>
+        <p>Test the comprehensive business data collection from multiple sources:</p>
+        
+        <input type="text" id="businessName" placeholder="Enter business name..." style="width: 300px; padding: 8px; margin-right: 10px;">
+        <input type="text" id="businessDomain" placeholder="Enter domain (optional)..." style="width: 300px; padding: 8px; margin-right: 10px;">
+        
+        <div style="margin: 15px 0;">
+            <button class="test-button" onclick="testComprehensiveAPI()">🔍 Get Comprehensive Business Data</button>
+            <button class="test-button" onclick="testGoogleSearchConsole()">📈 Test Search Console API</button>
+            <button class="test-button" onclick="testGoogleAnalytics()">📊 Test Analytics API</button>
+            <button class="test-button" onclick="testGoogleAds()">💰 Test Google Ads API</button>
+            <button class="test-button" onclick="testSocialMedia()">📱 Test Social Media APIs</button>
+        </div>
+        
+        <div id="businessResults" class="results" style="display: none;"></div>
+    </div>
+
+    <!-- Real-time Metrics Dashboard -->
+    <div class="test-section">
+        <h2>⚡ Real-time Business Metrics</h2>
+        <div id="metricsPanel" style="display: none;">
+            <div class="metric-card">
+                <div class="metric-title">Search Console Clicks</div>
+                <div class="metric-value" id="metric-sc-clicks">-</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Analytics Sessions</div>
+                <div class="metric-value" id="metric-ga-sessions">-</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Social Media Followers</div>
+                <div class="metric-value" id="metric-social-followers">-</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Ad Spend (30 days)</div>
+                <div class="metric-value" id="metric-ads-spend">-</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">SEO Keywords Tracked</div>
+                <div class="metric-value" id="metric-keywords">-</div>
+            </div>
+            <div class="metric-card">
+                <div class="metric-title">Media Assets</div>
+                <div class="metric-value" id="metric-media">-</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- API Performance Testing -->
+    <div class="test-section">
+        <h2>⚡ API Performance Testing</h2>
+        <p>Test all APIs simultaneously to check performance and data integration:</p>
+        
+        <button class="test-button" onclick="testAllAPIsParallel()">🚀 Test All APIs in Parallel</button>
+        <button class="test-button" onclick="testAPIResponseTimes()">⏱️ Measure Response Times</button>
+        <button class="test-button" onclick="stressTestAPIs()">💪 Stress Test APIs</button>
+        
+        <div id="performanceResults" class="results" style="display: none;"></div>
+    </div>
+
+    <!-- Data Export & Storage Testing -->
+    <div class="test-section">
+        <h2>💾 Data Storage & Export Testing</h2>
+        <p>Test database storage and data export functionality:</p>
+        
+        <button class="test-button" onclick="testDatabaseStorage()">💾 Test Database Storage</button>
+        <button class="test-button" onclick="testDataExport()">📤 Test Data Export</button>
+        <button class="test-button" onclick="testCachedData()">🔄 Test Cached Data Retrieval</button>
+        
+        <div id="storageResults" class="results" style="display: none;"></div>
+    </div>
+
+    <script>
+        const SUPABASE_URL = 'https://rxkywcylrtoirshfqqpd.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ4a3l3Y3lscnRvaXJzaGZxcXBkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MzQ5NzQ5MzQsImV4cCI6MjA1MDU1MDkzNH0.JOh3uyDtdUNzCzq4h37oUqrpN_yJe6eYqVdz1OKb9Z8';
+
+        async function callAPI(endpoint, data) {
+            try {
+                const response = await fetch(`${SUPABASE_URL}/functions/v1/${endpoint}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error(`API call to ${endpoint} failed:`, error);
+                throw error;
+            }
+        }
+
+        async function testComprehensiveAPI() {
+            const businessName = document.getElementById('businessName').value || 'TechCorp Solutions';
+            const domain = document.getElementById('businessDomain').value || 'techcorp.com';
+            const resultsDiv = document.getElementById('businessResults');
+            
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">🔄 Gathering comprehensive business intelligence data...</div>';
+
+            try {
+                // Test all APIs in parallel
+                const [searchConsole, analytics, ads, social] = await Promise.allSettled([
+                    callAPI('google-search-console', { domain }),
+                    callAPI('google-analytics', { domain }),
+                    callAPI('google-ads', { businessName }),
+                    callAPI('social-media', { businessName })
+                ]);
+
+                let results = '<div class="success">✅ Comprehensive Business Intelligence Data Retrieved!</div>';
+                
+                // Display Search Console data
+                if (searchConsole.status === 'fulfilled') {
+                    const sc = searchConsole.value;
+                    results += `
+                        <h3>📈 Google Search Console</h3>
+                        <div class="metric-card">
+                            <strong>Total Clicks:</strong> ${sc.clicks?.toLocaleString() || 'N/A'}<br>
+                            <strong>Total Impressions:</strong> ${sc.impressions?.toLocaleString() || 'N/A'}<br>
+                            <strong>Average CTR:</strong> ${sc.ctr ? (sc.ctr * 100).toFixed(2) + '%' : 'N/A'}<br>
+                            <strong>Average Position:</strong> ${sc.position?.toFixed(1) || 'N/A'}
+                        </div>
+                        <div><strong>Top Queries:</strong></div>
+                        <ul>${sc.topQueries?.slice(0, 5).map(q => `<li>${q.query} (${q.clicks} clicks)</li>`).join('') || '<li>No data</li>'}</ul>
+                    `;
+                    
+                    // Update metrics panel
+                    document.getElementById('metric-sc-clicks').textContent = sc.clicks?.toLocaleString() || '0';
+                }
+
+                // Display Analytics data
+                if (analytics.status === 'fulfilled') {
+                    const ga = analytics.value;
+                    results += `
+                        <h3>📊 Google Analytics</h3>
+                        <div class="metric-card">
+                            <strong>Sessions:</strong> ${ga.sessions?.toLocaleString() || 'N/A'}<br>
+                            <strong>Users:</strong> ${ga.users?.toLocaleString() || 'N/A'}<br>
+                            <strong>Pageviews:</strong> ${ga.pageviews?.toLocaleString() || 'N/A'}<br>
+                            <strong>Bounce Rate:</strong> ${ga.bounceRate ? (ga.bounceRate * 100).toFixed(1) + '%' : 'N/A'}
+                        </div>
+                        <div><strong>Top Traffic Sources:</strong></div>
+                        <ul>${ga.trafficSources?.slice(0, 3).map(s => `<li>${s.source}/${s.medium} (${s.sessions} sessions)</li>`).join('') || '<li>No data</li>'}</ul>
+                    `;
+                    
+                    // Update metrics panel
+                    document.getElementById('metric-ga-sessions').textContent = ga.sessions?.toLocaleString() || '0';
+                }
+
+                // Display Google Ads data
+                if (ads.status === 'fulfilled') {
+                    const adData = ads.value;
+                    const totalSpend = adData.campaigns?.reduce((sum, campaign) => sum + (campaign.cost || 0), 0) || 0;
+                    results += `
+                        <h3>💰 Google Ads</h3>
+                        <div class="metric-card">
+                            <strong>Active Campaigns:</strong> ${adData.campaigns?.length || 0}<br>
+                            <strong>Total Spend:</strong> $${totalSpend.toFixed(2)}<br>
+                            <strong>Total Clicks:</strong> ${adData.campaigns?.reduce((sum, c) => sum + (c.clicks || 0), 0)?.toLocaleString() || '0'}<br>
+                            <strong>Total Impressions:</strong> ${adData.campaigns?.reduce((sum, c) => sum + (c.impressions || 0), 0)?.toLocaleString() || '0'}
+                        </div>
+                        <div><strong>Top Keywords:</strong></div>
+                        <ul>${adData.keywords?.slice(0, 3).map(k => `<li>${k.keyword} (${k.clicks} clicks, $${k.cost?.toFixed(2) || '0'})</li>`).join('') || '<li>No data</li>'}</ul>
+                    `;
+                    
+                    // Update metrics panel
+                    document.getElementById('metric-ads-spend').textContent = `$${totalSpend.toFixed(0)}`;
+                }
+
+                // Display Social Media data
+                if (social.status === 'fulfilled') {
+                    const socialData = social.value;
+                    let totalFollowers = 0;
+                    let platforms = [];
+                    
+                    if (socialData.facebook) {
+                        totalFollowers += socialData.facebook.followers || 0;
+                        platforms.push(`Facebook: ${socialData.facebook.followers?.toLocaleString()}`);
+                    }
+                    if (socialData.instagram) {
+                        totalFollowers += socialData.instagram.followers || 0;
+                        platforms.push(`Instagram: ${socialData.instagram.followers?.toLocaleString()}`);
+                    }
+                    if (socialData.twitter) {
+                        totalFollowers += socialData.twitter.followers || 0;
+                        platforms.push(`Twitter: ${socialData.twitter.followers?.toLocaleString()}`);
+                    }
+                    if (socialData.linkedin) {
+                        totalFollowers += socialData.linkedin.followers || 0;
+                        platforms.push(`LinkedIn: ${socialData.linkedin.followers?.toLocaleString()}`);
+                    }
+                    
+                    results += `
+                        <h3>📱 Social Media</h3>
+                        <div class="metric-card">
+                            <strong>Total Followers:</strong> ${totalFollowers.toLocaleString()}<br>
+                            <strong>Platforms:</strong> ${platforms.length}
+                        </div>
+                        <div><strong>Platform Breakdown:</strong></div>
+                        <ul>${platforms.map(p => `<li>${p} followers</li>`).join('') || '<li>No data</li>'}</ul>
+                    `;
+                    
+                    // Update metrics panel
+                    document.getElementById('metric-social-followers').textContent = totalFollowers.toLocaleString();
+                }
+
+                // Show metrics panel
+                document.getElementById('metricsPanel').style.display = 'block';
+                
+                results += '<div style="margin-top: 20px;"><strong>🎉 All APIs tested successfully!</strong></div>';
+                resultsDiv.innerHTML = results;
+
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testGoogleSearchConsole() {
+            const domain = document.getElementById('businessDomain').value || 'example.com';
+            const resultsDiv = document.getElementById('businessResults');
+            
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">🔄 Testing Google Search Console API...</div>';
+
+            try {
+                const data = await callAPI('google-search-console', { domain });
+                resultsDiv.innerHTML = `
+                    <div class="success">✅ Google Search Console API working!</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Search Console API Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testGoogleAnalytics() {
+            const domain = document.getElementById('businessDomain').value || 'example.com';
+            const resultsDiv = document.getElementById('businessResults');
+            
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">🔄 Testing Google Analytics API...</div>';
+
+            try {
+                const data = await callAPI('google-analytics', { domain });
+                resultsDiv.innerHTML = `
+                    <div class="success">✅ Google Analytics API working!</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Analytics API Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testGoogleAds() {
+            const businessName = document.getElementById('businessName').value || 'TechCorp Solutions';
+            const resultsDiv = document.getElementById('businessResults');
+            
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">🔄 Testing Google Ads API...</div>';
+
+            try {
+                const data = await callAPI('google-ads', { businessName });
+                resultsDiv.innerHTML = `
+                    <div class="success">✅ Google Ads API working!</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Google Ads API Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testSocialMedia() {
+            const businessName = document.getElementById('businessName').value || 'TechCorp Solutions';
+            const resultsDiv = document.getElementById('businessResults');
+            
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">🔄 Testing Social Media APIs...</div>';
+
+            try {
+                const data = await callAPI('social-media', { businessName });
+                resultsDiv.innerHTML = `
+                    <div class="success">✅ Social Media APIs working!</div>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Social Media API Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testAllAPIsParallel() {
+            const businessName = document.getElementById('businessName').value || 'TechCorp Solutions';
+            const domain = document.getElementById('businessDomain').value || 'techcorp.com';
+            const resultsDiv = document.getElementById('performanceResults');
+            
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">🔄 Testing all APIs in parallel...</div>';
+
+            const startTime = performance.now();
+
+            try {
+                const results = await Promise.allSettled([
+                    callAPI('google-search-console', { domain }),
+                    callAPI('google-analytics', { domain }),
+                    callAPI('google-ads', { businessName }),
+                    callAPI('social-media', { businessName }),
+                    callAPI('google-places', { query: businessName })
+                ]);
+
+                const endTime = performance.now();
+                const totalTime = endTime - startTime;
+
+                let successCount = 0;
+                let errorCount = 0;
+                results.forEach(result => {
+                    if (result.status === 'fulfilled') successCount++;
+                    else errorCount++;
+                });
+
+                resultsDiv.innerHTML = `
+                    <div class="success">⚡ Parallel API Test Complete!</div>
+                    <div class="metric-card">
+                        <strong>Total Time:</strong> ${totalTime.toFixed(2)}ms<br>
+                        <strong>Successful APIs:</strong> ${successCount}/5<br>
+                        <strong>Failed APIs:</strong> ${errorCount}/5<br>
+                        <strong>Average Response Time:</strong> ${(totalTime/5).toFixed(2)}ms
+                    </div>
+                    <pre>${JSON.stringify(results.map(r => ({ status: r.status, hasData: r.status === 'fulfilled' })), null, 2)}</pre>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Parallel Test Error: ${error.message}</div>`;
+            }
+        }
+
+        async function testAPIResponseTimes() {
+            const resultsDiv = document.getElementById('performanceResults');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">⏱️ Measuring individual API response times...</div>';
+
+            const apis = [
+                { name: 'Google Search Console', endpoint: 'google-search-console', data: { domain: 'example.com' } },
+                { name: 'Google Analytics', endpoint: 'google-analytics', data: { domain: 'example.com' } },
+                { name: 'Google Ads', endpoint: 'google-ads', data: { businessName: 'TechCorp' } },
+                { name: 'Social Media', endpoint: 'social-media', data: { businessName: 'TechCorp' } },
+                { name: 'Google Places', endpoint: 'google-places', data: { query: 'TechCorp' } }
+            ];
+
+            let results = '<div class="success">⏱️ API Response Time Analysis</div>';
+
+            for (const api of apis) {
+                const startTime = performance.now();
+                try {
+                    await callAPI(api.endpoint, api.data);
+                    const endTime = performance.now();
+                    const responseTime = endTime - startTime;
+                    results += `
+                        <div class="metric-card">
+                            <strong>${api.name}:</strong> ${responseTime.toFixed(2)}ms
+                            <div style="font-size: 12px; color: green;">✅ Success</div>
+                        </div>
+                    `;
+                } catch (error) {
+                    const endTime = performance.now();
+                    const responseTime = endTime - startTime;
+                    results += `
+                        <div class="metric-card">
+                            <strong>${api.name}:</strong> ${responseTime.toFixed(2)}ms
+                            <div style="font-size: 12px; color: red;">❌ Error</div>
+                        </div>
+                    `;
+                }
+            }
+
+            resultsDiv.innerHTML = results;
+        }
+
+        async function stressTestAPIs() {
+            const resultsDiv = document.getElementById('performanceResults');
+            resultsDiv.style.display = 'block';
+            resultsDiv.innerHTML = '<div class="loading">💪 Running stress test (10 concurrent requests)...</div>';
+
+            const testRequests = [];
+            for (let i = 0; i < 10; i++) {
+                testRequests.push(
+                    callAPI('google-places', { query: `Business ${i}` })
+                );
+            }
+
+            const startTime = performance.now();
+            try {
+                const results = await Promise.allSettled(testRequests);
+                const endTime = performance.now();
+                const totalTime = endTime - startTime;
+
+                const successCount = results.filter(r => r.status === 'fulfilled').length;
+                const errorCount = results.filter(r => r.status === 'rejected').length;
+
+                resultsDiv.innerHTML = `
+                    <div class="success">💪 Stress Test Complete!</div>
+                    <div class="metric-card">
+                        <strong>10 Concurrent Requests</strong><br>
+                        <strong>Total Time:</strong> ${totalTime.toFixed(2)}ms<br>
+                        <strong>Success Rate:</strong> ${successCount}/10 (${(successCount/10*100).toFixed(1)}%)<br>
+                        <strong>Average Time:</strong> ${(totalTime/10).toFixed(2)}ms per request<br>
+                        <strong>Requests per Second:</strong> ${(10000/totalTime).toFixed(2)}
+                    </div>
+                `;
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="error">❌ Stress Test Error: ${error.message}</div>`;
+            }
+        }
+
+        // Add some sample data on page load
+        window.addEventListener('load', () => {
+            document.getElementById('businessName').value = 'TechCorp Solutions';
+            document.getElementById('businessDomain').value = 'techcorp.com';
+        });
+    </script>
+</body>
+</html>

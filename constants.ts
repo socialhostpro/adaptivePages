@@ -2,7 +2,34 @@
 
 
 export const TONES = ["Professional", "Playful", "Persuasive", "Informative", "Inspirational"];
-export const PALETTES = ["Vibrant & Energetic", "Minimalist & Modern", "Corporate & Trustworthy", "Elegant & Sophisticated", "Natural & Earthy"];
+
+export const PALETTES = {
+    "vibrant": {
+        name: "Vibrant & Energetic",
+        colors: ["#FF6B6B", "#4ECDC4", "#45B7D1"],
+        description: "Bold, bright colors that grab attention"
+    },
+    "minimalist": {
+        name: "Minimalist & Modern", 
+        colors: ["#2C3E50", "#95A5A6", "#ECF0F1"],
+        description: "Clean, neutral tones for modern designs"
+    },
+    "corporate": {
+        name: "Corporate & Trustworthy",
+        colors: ["#3498DB", "#2C3E50", "#34495E"],
+        description: "Professional blues and grays"
+    },
+    "elegant": {
+        name: "Elegant & Sophisticated",
+        colors: ["#8E44AD", "#C0392B", "#E74C3C"],
+        description: "Rich purples and deep reds"
+    },
+    "natural": {
+        name: "Natural & Earthy",
+        colors: ["#27AE60", "#F39C12", "#E67E22"],
+        description: "Greens, oranges, and earth tones"
+    }
+};
 
 export const INDUSTRIES = [
     "General Business", "Software / SaaS", "Consulting", "Coaching", "E-commerce Store", "Local Service", 
@@ -61,4 +88,4 @@ export const SECTIONS = SECTION_CATEGORIES.reduce((acc, category) => {
 }, {} as { [key: string]: string });
 
 
-export const DEFAULT_PROMPT = "A landing page for a new AI-powered yoga app called 'ZenFlow'. It helps users create personalized yoga routines.";
+export const DEFAULT_PROMPT = "";

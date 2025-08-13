@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear AdaptivePages Cache</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .button { 
+            background: #4CAF50; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            margin: 10px;
+            font-size: 16px;
+        }
+        .button:hover { background: #45a049; }
+        .status { 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 4px; 
+            background: #f0f0f0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧹 AdaptivePages Cache Cleaner</h1>
+    <p>Use this page to clear cached yoga content and reset the application state.</p>
+    
+    <button class="button" onclick="clearYogaCache()">Clear Yoga Cache Only</button>
+    <button class="button" onclick="clearAllCache()">Clear All Cache</button>
+    <button class="button" onclick="showCacheContents()">Show Cache Contents</button>
+    
+    <div id="status" class="status"></div>
+    
+    <script>
+        function clearYogaCache() {
+            const cachedPrompt = localStorage.getItem('ai-lp-generator-prompt');
+            const cachedWizard = localStorage.getItem('generationWizard');
+            
+            let cleared = [];
+            
+            if (cachedPrompt && (cachedPrompt.includes('ZenFlow') || cachedPrompt.includes('yoga'))) {
+                localStorage.removeItem('ai-lp-generator-prompt');
+                cleared.push('ai-lp-generator-prompt');
+            }
+            
+            if (cachedWizard && (cachedWizard.includes('ZenFlow') || cachedWizard.includes('yoga'))) {
+                localStorage.removeItem('generationWizard');
+                cleared.push('generationWizard');
+            }
+            
+            const status = document.getElementById('status');
+            if (cleared.length > 0) {
+                status.innerHTML = `✅ Cleared yoga content from: ${cleared.join(', ')}`;
+                status.style.background = '#d4edda';
+                status.style.color = '#155724';
+            } else {
+                status.innerHTML = '✨ No yoga content found in cache';
+                status.style.background = '#cce7ff';
+                status.style.color = '#004085';
+            }
+        }
+        
+        function clearAllCache() {
+            localStorage.clear();
+            const status = document.getElementById('status');
+            status.innerHTML = '🚮 All localStorage data cleared';
+            status.style.background = '#f8d7da';
+            status.style.color = '#721c24';
+        }
+        
+        function showCacheContents() {
+            const prompt = localStorage.getItem('ai-lp-generator-prompt');
+            const wizard = localStorage.getItem('generationWizard');
+            
+            const status = document.getElementById('status');
+            let content = '<h3>Current Cache Contents:</h3>';
+            
+            content += `<p><strong>ai-lp-generator-prompt:</strong><br>${prompt || 'Not set'}</p>`;
+            content += `<p><strong>generationWizard:</strong><br>${wizard || 'Not set'}</p>`;
+            
+            status.innerHTML = content;
+            status.style.background = '#fff3cd';
+            status.style.color = '#856404';
+        }
+        
+        // Auto-check for yoga content on page load
+        window.onload = function() {
+            const cachedPrompt = localStorage.getItem('ai-lp-generator-prompt');
+            if (cachedPrompt && (cachedPrompt.includes('ZenFlow') || cachedPrompt.includes('yoga'))) {
+                const status = document.getElementById('status');
+                status.innerHTML = '⚠️ Yoga content detected in cache! Click "Clear Yoga Cache Only" to remove it.';
+                status.style.background = '#fff3cd';
+                status.style.color = '#856404';
+            }
+        };
+    </script>
+</body>
+</html>

@@ -73,4 +73,4 @@ export const SECTIONS = SECTION_CATEGORIES.reduce((acc, category) => {
 }, {} as { [key: string]: string });
 
 /** A default prompt to show in the control panel on first load. */
-export const DEFAULT_PROMPT = "A landing page for a new AI-powered yoga app called 'ZenFlow'. It helps users create personalized yoga routines.";
+export const DEFAULT_PROMPT = "";

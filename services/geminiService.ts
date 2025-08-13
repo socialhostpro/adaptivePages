@@ -72,8 +72,11 @@ export async function generateLandingPageStructure(
   products?: ManagedProduct[],
   components?: SiteComponent[],
   oldSiteUrl?: string,
-  inspirationUrl?: string
+  inspirationUrl?: string,
+  localBusinessData?: any
 ): Promise<LandingPageData> {
+  console.log('🚀 generateLandingPageStructure called with business data:', localBusinessData);
+  
   const selectedSections = { ...LANDING_PAGE_SCHEMA.properties };
   
   // Filter schema to only include selected sections
@@ -167,6 +170,25 @@ export async function generateLandingPageStructure(
       urlInstructions += `\n- CRITICAL: Use the first URL for CONTENT and the second URL for STYLE.`;
     }
 
+  // Format business data for prompt if available
+  const businessDataSection = localBusinessData && localBusinessData.businessName ? `
+    ---
+    BUSINESS INFORMATION (Use this comprehensive data to create highly targeted content):
+    - Business Name: "${localBusinessData.businessName}"
+    - Business Type: "${localBusinessData.businessType}"
+    - Website: "${localBusinessData.website}"
+    - Location: "${localBusinessData.address}" (Zip: ${localBusinessData.zipCode})
+    - Contact: Phone: ${localBusinessData.phone}, Email: ${localBusinessData.email}
+    - Service Areas: ${localBusinessData.serviceAreaZips?.join(', ') || 'Not specified'}
+    - Target Keywords: ${localBusinessData.targetKeywords?.join(', ') || 'Not specified'}
+    - Primary Services: ${localBusinessData.primaryServices?.join(', ') || 'Not specified'}
+    - Brand Terms: ${localBusinessData.brandTerms?.join(', ') || 'Not specified'}
+    - Unique Selling Points: ${localBusinessData.uniqueSellingPoints?.join(', ') || 'Not specified'}
+    - Competitors: ${localBusinessData.competitorUrls?.join(', ') || 'Not specified'}
+    
+    IMPORTANT: Use this business information throughout ALL sections to create personalized, relevant content that speaks directly to this business and their target audience. Incorporate the target keywords naturally, highlight the unique selling points, and reference the specific services offered.
+    ---` : '';
+
   const fullPrompt = `
     You are an expert web designer and copywriter specializing in creating high-converting landing pages.
     Your task is to generate the content and structure for a landing page based on the user's request.
@@ -182,6 +204,7 @@ export async function generateLandingPageStructure(
     - Desired Palette: "${palette}"
     - Sections to Include: ${sections.join(', ')}
     ${urlInstructions}
+    ${businessDataSection}
     ---
 
     INSTRUCTIONS:
