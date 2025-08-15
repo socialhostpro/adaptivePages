@@ -26,27 +26,6 @@ scoop install supabase
 
 ### 2. Login and Link Project
 
-```powershell
-# Login to Supabase (opens browser)
-supabase login
-
-# Link to your project (get project ref from Supabase dashboard)
-supabase link --project-ref rxkywcylrtoirshfqqpd
-```
-
-### 3. Set Google Places API Key
-
-```powershell
-# Set your API key as a Supabase secret
-supabase secrets set GOOGLE_PLACES_API_KEY=AIzaSyAsiCxFefECTlJag_1mSfflJuIw35PqZLU
-```
-
-### 4. Deploy the Edge Function
-
-```powershell
-# Deploy the google-places function
-supabase functions deploy google-places
-```
 
 ## 🎯 Expected Result
 
